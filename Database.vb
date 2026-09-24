@@ -102,6 +102,24 @@ INSERT OR IGNORE INTO Medicos(Nombre, Especialidad, Colegiado) VALUES('Médico D
         End Using
     End Sub
 
+    Public Sub RegistrarAccion(usuario As String, rol As String, accion As String, modulo As String, detalle As String)
+        Try
+            Using cn = Connection()
+                Using cmd = cn.CreateCommand()
+                    cmd.CommandText = "INSERT INTO RegistroAcciones(FechaHora,Usuario,Rol,Accion,Modulo,Detalle) VALUES($f,$u,$r,$a,$m,$d)"
+                    cmd.Parameters.AddWithValue("$f", DateTime.Now.ToString("s"))
+                    cmd.Parameters.AddWithValue("$u", If(String.IsNullOrWhiteSpace(usuario), "SISTEMA", usuario))
+                    cmd.Parameters.AddWithValue("$r", If(String.IsNullOrWhiteSpace(rol), "SISTEMA", rol))
+                    cmd.Parameters.AddWithValue("$a", accion)
+                    cmd.Parameters.AddWithValue("$m", modulo)
+                    cmd.Parameters.AddWithValue("$d", If(detalle, ""))
+                    cmd.ExecuteNonQuery()
+                End Using
+            End Using
+        Catch
+        End Try
+    End Sub
+
     Public Sub BackupDatabase(destino As String)
         If String.IsNullOrWhiteSpace(destino) Then
             Throw New ArgumentException("Debe indicar el destino de la copia.", NameOf(destino))
