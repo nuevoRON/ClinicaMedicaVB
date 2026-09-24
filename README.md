@@ -40,3 +40,11 @@ Cambie esta contraseña antes de usar el sistema en un entorno real.
 - Migración a SQL Server si habrá varios equipos conectados simultáneamente
 
 **Importante:** este proyecto es una base técnica. Para uso clínico real deben añadirse controles de seguridad, privacidad, respaldo, auditoría y validación de requisitos legales aplicables.
+
+## Usuarios y permisos
+Se incorporó el módulo de administración de usuarios con los roles:
+- Administrador: acceso completo y administración de usuarios.
+- Médico: acceso a pacientes, citas, consultas, expediente y recetas.
+- Recepción: acceso a pacientes y citas.
+
+El usuario inicial es `admin` con contraseña `admin123`.
