@@ -10,7 +10,7 @@ Public Class ExpedienteForm
     Private citas As New DataGridView()
     Private btnActualizar As New Button()
 
-    Public Sub New()
+    Public Sub New(Optional pacienteIdInicial As Integer = 0)
         Text = "Expediente clínico"
         Width = 1100
         Height = 700
@@ -46,10 +46,10 @@ Public Class ExpedienteForm
         tabs.TabPages.Add(tabCitas)
         Controls.Add(tabs)
 
-        CargarPacientes()
+        CargarPacientes(pacienteIdInicial)
     End Sub
 
-    Private Sub CargarPacientes()
+    Private Sub CargarPacientes(Optional pacienteIdInicial As Integer = 0)
         paciente.Items.Clear()
         Using cn=Database.Connection()
             Using cmd=cn.CreateCommand()
@@ -64,7 +64,14 @@ Public Class ExpedienteForm
                 End Using
             End Using
         End Using
-        If paciente.Items.Count>0 Then paciente.SelectedIndex=0
+        If paciente.Items.Count>0 Then
+            If pacienteIdInicial>0 Then
+                For i As Integer=0 To paciente.Items.Count-1
+                    If DirectCast(paciente.Items(i),PacienteItem).Id=pacienteIdInicial Then paciente.SelectedIndex=i : Exit For
+                Next
+            End If
+            If paciente.SelectedIndex<0 Then paciente.SelectedIndex=0
+        End If
     End Sub
 
     Private Sub CargarExpediente(sender As Object, e As EventArgs)
