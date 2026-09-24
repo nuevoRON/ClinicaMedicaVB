@@ -30,6 +30,7 @@ Public Class LoginForm
                 cmd.Parameters.AddWithValue("$c", txtClave.Text)
                 Dim rol = cmd.ExecuteScalar()
                 If rol IsNot Nothing Then
+                    Database.RegistrarAccion(txtUsuario.Text.Trim(), rol.ToString(), "Inicio de sesión", "Seguridad", "Acceso autorizado")
                     Hide()
                     Using f As New MainForm(txtUsuario.Text.Trim(), rol.ToString())
                         f.ShowDialog()
@@ -37,6 +38,7 @@ Public Class LoginForm
                     Show()
                     txtClave.Clear()
                 Else
+                    Database.RegistrarAccion(txtUsuario.Text.Trim(), "", "Intento de inicio de sesión", "Seguridad", "Acceso rechazado")
                     MessageBox.Show("Usuario o contraseña incorrectos.")
                 End If
             End Using
