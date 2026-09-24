@@ -92,4 +92,65 @@ INSERT OR IGNORE INTO Medicos(Nombre, Especialidad, Colegiado) VALUES('Médico D
             End Using
         End Using
     End Sub
+
+    Public Sub BackupDatabase(destino As String)
+        If String.IsNullOrWhiteSpace(destino) Then
+            Throw New ArgumentException("Debe indicar el destino de la copia.", NameOf(destino))
+        End If
+
+        Dim destinoCompleto = Path.GetFullPath(destino)
+        Dim carpeta = Path.GetDirectoryName(destinoCompleto)
+
+        If Not String.IsNullOrWhiteSpace(carpeta) AndAlso Not Directory.Exists(carpeta) Then
+            Directory.CreateDirectory(carpeta)
+        End If
+
+        If destinoCompleto.Equals(Path.GetFullPath(DbPath), StringComparison.OrdinalIgnoreCase) Then
+            Throw New IOException("El destino no puede ser la base de datos activa.")
+        End If
+
+        Using origen As SqliteConnection = Connection()
+            Using destinoCn As New SqliteConnection($"Data Source={destinoCompleto}")
+                destinoCn.Open()
+                origen.BackupDatabase(destinoCn)
+            End Using
+        End Using
+    End Sub
+
+    Public Function CarpetaCopias() As String
+        Dim ruta = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Backups")
+        If Not Directory.Exists(ruta) Then Directory.CreateDirectory(ruta)
+        Return ruta
+    End Function
+
+    Public Function CrearCopiaAutomatica() As String
+        If Not File.Exists(DbPath) Then Return String.Empty
+
+        Dim destino = Path.Combine(CarpetaCopias(), $"clinica_auto_{DateTime.Now:yyyyMMdd_HHmmss}.db")
+        BackupDatabase(destino)
+        Return destino
+    End Function
+
+    Public Sub CrearCopiaDiariaSiCorresponde()
+        If Not File.Exists(DbPath) Then Return
+
+        Dim carpeta = CarpetaCopias()
+        Dim archivos = Directory.GetFiles(carpeta, "clinica_auto_*.db")
+
+        If archivos.Length = 0 Then
+            CrearCopiaAutomatica()
+            Return
+        End If
+
+        Dim ultimaFecha As DateTime = DateTime.MinValue
+
+        For Each archivo In archivos
+            Dim fecha = File.GetLastWriteTime(archivo)
+            If fecha > ultimaFecha Then ultimaFecha = fecha
+        Next
+
+        If ultimaFecha.Date < DateTime.Now.Date Then
+            CrearCopiaAutomatica()
+        End If
+    End Sub
 End Module
