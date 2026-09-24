@@ -3,6 +3,7 @@ Imports System.Drawing
 
 Public Class PacientesForm
     Inherits Form
+    Private operador As String = Environment.UserName
 
     Private grid As New DataGridView()
     Private txtIdentidad As New TextBox()
@@ -102,6 +103,7 @@ Public Class PacientesForm
                     cmd.ExecuteNonQuery()
                 End Using
             End Using
+            Database.RegistrarAccion(operador, "No especificado", "Registro de paciente", "Pacientes", txtIdentidad.Text.Trim())
             MessageBox.Show("Paciente registrado.")
             Limpiar() : Cargar()
         Catch ex As Exception
