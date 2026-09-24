@@ -18,15 +18,17 @@ Public Class MainForm
         Dim btnRep As Button = CrearBoton("Reportes",600,120)
         Dim btnMed As Button = CrearBoton("Médicos",30,210)
         Dim btnExp As Button = CrearBoton("Expediente clínico",220,210)
+        Dim btnRec As Button = CrearBoton("Recetas",410,210)
         Dim btnCerrar As Button = CrearBoton("Cerrar sesión",600,210)
         AddHandler btnPac.Click, Sub() New PacientesForm().ShowDialog()
         AddHandler btnCit.Click, Sub() New CitasForm().ShowDialog()
         AddHandler btnCon.Click, Sub() New ConsultasForm().ShowDialog()
         AddHandler btnMed.Click, Sub() New MedicosForm().ShowDialog()
+        AddHandler btnRec.Click, Sub() New RecetasForm().ShowDialog()
         AddHandler btnExp.Click, Sub() New ExpedienteForm().ShowDialog()
         AddHandler btnRep.Click, AddressOf Reportes
         AddHandler btnCerrar.Click, Sub() Close()
-        Controls.AddRange({titulo,sesion,btnPac,btnCit,btnCon,btnRep,btnMed,btnExp,btnCerrar})
+        Controls.AddRange({titulo,sesion,btnPac,btnCit,btnCon,btnRep,btnMed,btnExp,btnRec,btnCerrar})
     End Sub
 
     Private Function CrearBoton(t As String,x As Integer,y As Integer) As Button
