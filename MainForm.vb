@@ -22,6 +22,7 @@ Public Class MainForm
         Dim btnExp As Button = CrearBoton("Expediente clínico",220,210)
         Dim btnRec As Button = CrearBoton("Recetas",410,210)
         Dim btnUsu As Button = CrearBoton("Usuarios",600,210)
+        Dim btnBack As Button = CrearBoton("Copias seguridad",30,300)
         Dim btnCerrar As Button = CrearBoton("Cerrar sesión",600,300)
 
         AddHandler btnPac.Click, Sub() New PacientesForm().ShowDialog()
@@ -32,6 +33,7 @@ Public Class MainForm
         AddHandler btnExp.Click, Sub() New ExpedienteForm().ShowDialog()
         AddHandler btnRep.Click, Sub() New ReportesForm().ShowDialog()
         AddHandler btnUsu.Click, Sub() New UsuariosForm().ShowDialog()
+        AddHandler btnBack.Click, Sub() New BackupForm().ShowDialog()
         AddHandler btnCerrar.Click, Sub() Close()
 
         ' Permisos por rol
@@ -47,7 +49,7 @@ Public Class MainForm
             btnRep.Enabled=False
         End If
 
-        Controls.AddRange({titulo,sesion,btnPac,btnCit,btnCon,btnRep,btnMed,btnExp,btnRec,btnUsu,btnCerrar})
+        Controls.AddRange({titulo,sesion,btnPac,btnCit,btnCon,btnRep,btnMed,btnExp,btnRec,btnUsu,btnBack,btnCerrar})
     End Sub
 
     Private Function CrearBoton(t As String,x As Integer,y As Integer) As Button
