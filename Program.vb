@@ -7,7 +7,6 @@ Module Program
         ApplicationConfiguration.Initialize()
         Database.Initialize()
 
-        ' Copia automática diaria al iniciar el sistema.
         Try
             Database.CrearCopiaDiariaSiCorresponde()
         Catch
@@ -20,7 +19,6 @@ Module Program
 
     Private Sub RealizarCopiaAlCerrar(sender As Object, e As EventArgs)
         Try
-            ' Copia automática adicional al cerrar el sistema.
             Database.CrearCopiaAutomatica()
         Catch
             ' El cierre de la aplicación no debe bloquearse por un fallo de respaldo.
