@@ -1,9 +1,10 @@
 Imports Microsoft.Data.Sqlite
+Imports System.Drawing
 
 Public Class PacientesForm
     Inherits Form
+
     Private grid As New DataGridView()
-    Private txtId As New TextBox()
     Private txtIdentidad As New TextBox()
     Private txtNombre As New TextBox()
     Private txtApellidos As New TextBox()
@@ -13,11 +14,14 @@ Public Class PacientesForm
     Private txtDireccion As New TextBox()
     Private txtAlergias As New TextBox()
     Private txtAntecedentes As New TextBox()
+    Private txtBuscar As New TextBox()
+    Private cmbCampo As New ComboBox()
     Private btnGuardar As New Button()
+    Private btnExpediente As New Button()
 
     Public Sub New()
-        Text="Pacientes" : Width=1000 : Height=650 : StartPosition=FormStartPosition.CenterParent
-        txtId.Visible=False
+        Text="Pacientes" : Width=1150 : Height=700 : StartPosition=FormStartPosition.CenterParent
+
         Dim y=20
         AddField("Identidad",txtIdentidad,y) : y+=38
         AddField("Nombre",txtNombre,y) : y+=38
@@ -32,12 +36,43 @@ Public Class PacientesForm
         AddField("Dirección",txtDireccion,y) : y+=38
         AddField("Alergias",txtAlergias,y) : y+=38
         AddField("Antecedentes",txtAntecedentes,y) : y+=38
-        btnGuardar.Text="Guardar paciente" : btnGuardar.SetBounds(150,y,220,35)
-        AddHandler btnGuardar.Click, AddressOf Guardar
+
+        btnGuardar.Text="Guardar paciente" : btnGuardar.SetBounds(150,y,180,35)
         Controls.Add(btnGuardar)
-        grid.SetBounds(400,20,560,520)
-        grid.ReadOnly=True : grid.AutoSizeColumnsMode=DataGridViewAutoSizeColumnsMode.Fill
-        Controls.Add(grid)
+        AddHandler btnGuardar.Click, AddressOf Guardar
+
+        Dim lblBuscar As New Label With {.Text="Búsqueda avanzada:",.Left=400,.Top=20,.AutoSize=True}
+        cmbCampo.SetBounds(525,15,150,28)
+        cmbCampo.DropDownStyle=ComboBoxStyle.DropDownList
+        cmbCampo.Items.AddRange({"Todos","Identidad","Nombre","Apellidos","Teléfono"})
+        cmbCampo.SelectedIndex=0
+
+        txtBuscar.SetBounds(685,15,250,28)
+        txtBuscar.PlaceholderText="Escriba para buscar..."
+        Dim btnBuscar As New Button With {.Text="Buscar",.Left=945,.Top=15,.Width=80,.Height=28}
+        Dim btnTodos As New Button With {.Text="Mostrar todos",.Left=945,.Top=50,.Width=100,.Height=28}
+
+        btnExpediente.Text="Abrir expediente"
+        btnExpediente.SetBounds(400,55,180,35)
+        btnExpediente.Enabled=False
+
+        AddHandler btnBuscar.Click, AddressOf Buscar
+        AddHandler txtBuscar.TextChanged, AddressOf BuscarAutomaticamente
+        AddHandler cmbCampo.SelectedIndexChanged, AddressOf BuscarAutomaticamente
+        AddHandler btnTodos.Click, Sub() txtBuscar.Clear()
+        AddHandler btnExpediente.Click, AddressOf AbrirExpediente
+        AddHandler grid.CellDoubleClick, AddressOf AbrirExpediente
+
+        grid.SetBounds(400,105,700,500)
+        grid.ReadOnly=True
+        grid.AllowUserToAddRows=False
+        grid.SelectionMode=DataGridViewSelectionMode.FullRowSelect
+        grid.MultiSelect=False
+        grid.AutoSizeColumnsMode=DataGridViewAutoSizeColumnsMode.Fill
+
+        Controls.AddRange({lblBuscar,cmbCampo,txtBuscar,btnBuscar,btnTodos,btnExpediente,grid})
+        AddHandler grid.SelectionChanged, Sub() btnExpediente.Enabled=(grid.SelectedRows.Count>0)
+
         Cargar()
     End Sub
 
@@ -82,15 +117,47 @@ Public Class PacientesForm
     End Sub
 
     Private Sub Cargar()
+        Buscar()
+    End Sub
+
+    Private Sub BuscarAutomaticamente(sender As Object,e As EventArgs)
+        Buscar()
+    End Sub
+
+    Private Sub Buscar(sender As Object,e As EventArgs)
+        Buscar()
+    End Sub
+
+    Private Sub Buscar()
         Dim dt As New DataTable()
+        Dim filtro=txtBuscar.Text.Trim()
+        Dim condicion As String
+
+        Select Case cmbCampo.SelectedIndex
+            Case 1 : condicion="Identidad LIKE $f"
+            Case 2 : condicion="Nombre LIKE $f"
+            Case 3 : condicion="Apellidos LIKE $f"
+            Case 4 : condicion="Telefono LIKE $f"
+            Case Else : condicion="(Identidad LIKE $f OR Nombre LIKE $f OR Apellidos LIKE $f OR Telefono LIKE $f)"
+        End Select
+
         Using cn=Database.Connection()
             Using cmd=cn.CreateCommand()
-                cmd.CommandText="SELECT Id,Identidad,Nombre,Apellidos,FechaNacimiento,Sexo,Telefono FROM Pacientes ORDER BY Apellidos,Nombre"
+                cmd.CommandText=$"SELECT Id,Identidad,Nombre,Apellidos,FechaNacimiento,Sexo,Telefono FROM Pacientes WHERE {condicion} ORDER BY Apellidos,Nombre"
+                cmd.Parameters.AddWithValue("$f","%" & filtro & "%")
                 Using rd=cmd.ExecuteReader()
                     dt.Load(rd)
                 End Using
             End Using
         End Using
         grid.DataSource=dt
+    End Sub
+
+    Private Sub AbrirExpediente(sender As Object,e As EventArgs)
+        If grid.SelectedRows.Count=0 Then Return
+        Dim id=Convert.ToInt32(grid.SelectedRows(0).Cells("Id").Value)
+        Using f As New ExpedienteForm(id)
+            f.ShowDialog()
+        End Using
     End Sub
 End Class
