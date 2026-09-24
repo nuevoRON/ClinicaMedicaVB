@@ -30,7 +30,7 @@ Public Class MainForm
         AddHandler btnMed.Click, Sub() New MedicosForm().ShowDialog()
         AddHandler btnRec.Click, Sub() New RecetasForm().ShowDialog()
         AddHandler btnExp.Click, Sub() New ExpedienteForm().ShowDialog()
-        AddHandler btnRep.Click, AddressOf Reportes
+        AddHandler btnRep.Click, Sub() New ReportesForm().ShowDialog()
         AddHandler btnUsu.Click, Sub() New UsuariosForm().ShowDialog()
         AddHandler btnCerrar.Click, Sub() Close()
 
@@ -54,14 +54,4 @@ Public Class MainForm
         Return New Button With {.Text=t,.Left=x,.Top=y,.Width=150,.Height=55}
     End Function
 
-    Private Sub Reportes(sender As Object,e As EventArgs)
-        Dim totalPac As Integer
-        Using cn=Database.Connection()
-            Using cmd=cn.CreateCommand()
-                cmd.CommandText="SELECT COUNT(*) FROM Pacientes"
-                totalPac=Convert.ToInt32(cmd.ExecuteScalar())
-            End Using
-        End Using
-        MessageBox.Show($"Pacientes registrados: {totalPac}" & Environment.NewLine & "Módulo de reportes preparado para ampliarse.","Reportes")
-    End Sub
 End Class
