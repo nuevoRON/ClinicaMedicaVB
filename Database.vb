@@ -118,7 +118,8 @@ INSERT OR IGNORE INTO Medicos(Nombre, Especialidad, Colegiado) VALUES('Médico D
     End Sub
 
     Public Function CarpetaCopias() As String
-        Dim ruta = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Backups")
+        Dim cfg = BackupSettings.Cargar()
+        Dim ruta = cfg.ObtenerCarpetaDestino()
         If Not Directory.Exists(ruta) Then Directory.CreateDirectory(ruta)
         Return ruta
     End Function
@@ -128,12 +129,14 @@ INSERT OR IGNORE INTO Medicos(Nombre, Especialidad, Colegiado) VALUES('Médico D
 
         Dim destino = Path.Combine(CarpetaCopias(), $"clinica_auto_{DateTime.Now:yyyyMMdd_HHmmss}.db")
         BackupDatabase(destino)
+        LimpiarCopiasAntiguas()
         Return destino
     End Function
 
     Public Sub CrearCopiaDiariaSiCorresponde()
         If Not File.Exists(DbPath) Then Return
 
+        Dim cfg = BackupSettings.Cargar()
         Dim carpeta = CarpetaCopias()
         Dim archivos = Directory.GetFiles(carpeta, "clinica_auto_*.db")
 
@@ -143,14 +146,34 @@ INSERT OR IGNORE INTO Medicos(Nombre, Especialidad, Colegiado) VALUES('Médico D
         End If
 
         Dim ultimaFecha As DateTime = DateTime.MinValue
-
         For Each archivo In archivos
             Dim fecha = File.GetLastWriteTime(archivo)
             If fecha > ultimaFecha Then ultimaFecha = fecha
         Next
 
-        If ultimaFecha.Date < DateTime.Now.Date Then
+        If (DateTime.Now.Date - ultimaFecha.Date).Days >= Math.Max(1, cfg.IntervaloDias) Then
             CrearCopiaAutomatica()
+        Else
+            LimpiarCopiasAntiguas()
         End If
+    End Sub
+
+    Public Sub LimpiarCopiasAntiguas()
+        Dim cfg = BackupSettings.Cargar()
+        Dim limite = Math.Max(1, cfg.CopiasMaximas)
+        Dim carpeta = CarpetaCopias()
+
+        Dim archivos = Directory.GetFiles(carpeta, "clinica_auto_*.db") _
+            .OrderByDescending(Function(f) File.GetLastWriteTime(f)) _
+            .ToList()
+
+        If archivos.Count <= limite Then Return
+
+        For i = limite To archivos.Count - 1
+            Try
+                File.Delete(archivos(i))
+            Catch
+            End Try
+        Next
     End Sub
 End Module
