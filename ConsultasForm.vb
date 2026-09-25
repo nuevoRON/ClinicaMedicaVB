@@ -80,6 +80,7 @@ Public Class ConsultasForm
                 cmd.ExecuteNonQuery()
             End Using
         End Using
+        Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Registro de consulta", "Consultas", "PacienteId=" & p.Id.ToString())
         MessageBox.Show("Consulta registrada.") : Cargar()
     End Sub
 
