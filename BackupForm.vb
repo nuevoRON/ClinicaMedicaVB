@@ -154,10 +154,7 @@ Public Class BackupForm
             Database.BackupDatabase(preventiva)
             Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Respaldo preventivo", "Backup", Path.GetFileName(preventiva))
 
-            GC.Collect()
-            GC.WaitForPendingFinalizers()
-
-            File.Copy(ruta, Database.DbPath, True)
+            Database.RestoreDatabase(ruta)
             Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Restauración de respaldo", "Backup", Path.GetFileName(ruta))
 
             lblEstado.Text = $"Base de datos restaurada desde: {Path.GetFileName(ruta)}"
