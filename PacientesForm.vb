@@ -103,7 +103,7 @@ Public Class PacientesForm
                     cmd.ExecuteNonQuery()
                 End Using
             End Using
-            Database.RegistrarAccion(operador, "No especificado", "Registro de paciente", "Pacientes", txtIdentidad.Text.Trim())
+            Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Registro de paciente", "Pacientes", txtIdentidad.Text.Trim())
             MessageBox.Show("Paciente registrado.")
             Limpiar() : Cargar()
         Catch ex As Exception
