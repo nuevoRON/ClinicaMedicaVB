@@ -23,7 +23,7 @@ Public Module SecurityHelper
         If String.IsNullOrWhiteSpace(stored) Then Return False
         Dim parts = stored.Split("$"c)
         If parts.Length <> 4 OrElse Not parts(0).Equals("PBKDF2", StringComparison.OrdinalIgnoreCase) Then
-            Return String.Equals(password, stored, StringComparison.Ordinal)
+            Return False
         End If
         Try
             Dim iterations = Integer.Parse(parts(1))
