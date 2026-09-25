@@ -9,6 +9,12 @@ Public Class MedicosForm
     Private btn As New Button()
 
     Public Sub New()
+        If Not PermissionHelper.PuedeAcceder(Session.CurrentRole, "Medicos") Then
+            Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Acceso denegado", "Medicos", Me.Text)
+            MessageBox.Show("No tiene permisos para acceder a este módulo.", "Acceso restringido", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            AddHandler Me.Load, Sub() Me.Close()
+            Return
+        End If
         Text="Médicos" : Width=850 : Height=520 : StartPosition=FormStartPosition.CenterParent
         Controls.Add(New Label With {.Text="Nombre",.Left=20,.Top=30})
         txtNombre.SetBounds(120,25,220,28) : Controls.Add(txtNombre)
