@@ -190,12 +190,6 @@ Public Class RecetasForm
         Public ReadOnly Id As Integer
         Private ReadOnly Texto As String
         Public Sub New(id As Integer,texto As String)
-        If Not PermissionHelper.PuedeAcceder(Session.CurrentRole, "Recetas") Then
-            Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Acceso denegado", "Recetas", Me.Text)
-            MessageBox.Show("No tiene permisos para acceder a este módulo.", "Acceso restringido", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-            AddHandler Me.Load, Sub() Me.Close()
-            Return
-        End If
             Me.Id=id : Me.Texto=texto
         End Sub
         Public Overrides Function ToString() As String
