@@ -1,13 +1,17 @@
-name: Build ClinicaMedicaVB
+name: Build and Package ClinicaMedicaVB
 
 on:
   push:
     branches: ["main"]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: windows-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,3 +26,48 @@ jobs:
 
       - name: Build
         run: dotnet build ClinicaMedicaVB.vbproj --configuration Release --no-restore
+
+      - name: Publish Windows executable
+        run: >
+          dotnet publish ClinicaMedicaVB.vbproj
+          --configuration Release
+          --runtime win-x64
+          --self-contained true
+          --output publish
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:EnableCompressionInSingleFile=true
+
+      - name: Prepare package
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path package | Out-Null
+          Copy-Item publish\* package\ -Recurse -Force
+          New-Item -ItemType Directory -Force -Path package\Backups | Out-Null
+          Set-Content -Path package\LEEME.txt -Value @"
+          ClinicaMedicaVB - Versión ejecutable para Windows x64
+
+          Ejecución:
+          1. Extraiga todo el contenido del ZIP.
+          2. Ejecute ClinicaMedicaVB.exe.
+          3. La base de datos clinica.db se creará automáticamente al iniciar.
+
+          Usuario inicial:
+          Usuario: admin
+          Contraseña: admin123
+
+          Por seguridad, cambie la contraseña del usuario administrador después
+          del primer acceso.
+
+          Requisitos:
+          Windows 10/11 de 64 bits.
+          Esta versión es self-contained y no requiere instalar .NET 8 previamente.
+          "@
+
+      - name: Upload executable package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ClinicaMedicaVB-Windows-x64
+          path: package
+          if-no-files-found: error
+          retention-days: 30
