@@ -120,6 +120,7 @@ Public Class RecetasForm
                 cmd.ExecuteNonQuery()
             End Using
         End Using
+        Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Registro de receta", "Recetas", medicamento.Text)
         MessageBox.Show("Medicamento agregado a la receta.")
         medicamento.Clear() : dosis.Clear() : frecuencia.Clear() : duracion.Clear() : indicaciones.Clear()
         CargarRecetas()
