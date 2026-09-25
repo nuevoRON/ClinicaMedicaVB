@@ -93,8 +93,7 @@ CREATE TABLE IF NOT EXISTS Recetas(
     Duracion TEXT,
     Indicaciones TEXT,
     FOREIGN KEY(ConsultaId) REFERENCES Consultas(Id)
-);
-";
+);"
                 cmd.ExecuteNonQuery()
             End Using
 
@@ -113,9 +112,6 @@ CREATE TABLE IF NOT EXISTS Recetas(
                 medicoCmd.Parameters.AddWithValue("$c", "DEMO-001")
                 medicoCmd.ExecuteNonQuery()
             End Using
-"
-                cmd.ExecuteNonQuery()
-            End Using
 
             Using migracion = cn.CreateCommand()
                 migracion.CommandText = "SELECT Id, Clave FROM Usuarios WHERE Clave NOT LIKE 'PBKDF2$%'"
@@ -125,6 +121,7 @@ CREATE TABLE IF NOT EXISTS Recetas(
                         pendientes.Add(Tuple.Create(rd.GetInt32(0), rd.GetString(1)))
                     End While
                     rd.Close()
+
                     For Each item In pendientes
                         Using upd = cn.CreateCommand()
                             upd.CommandText = "UPDATE Usuarios SET Clave=$c WHERE Id=$id"
