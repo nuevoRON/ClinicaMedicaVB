@@ -141,10 +141,10 @@ Public Class ReportesForm
             Return
         End If
         printRow=0
+        Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Consulta de reporte", "Reportes", "Reporte generado")
         Using dlg As New PrintDialog()
             dlg.Document=printDoc
-            If Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Consulta de reporte", "Reportes", "Reporte generado")
-        dlg.ShowDialog()=DialogResult.OK Then
+            If dlg.ShowDialog()=DialogResult.OK Then
                 printDoc.Print()
             End If
         End Using
@@ -166,7 +166,7 @@ Public Class ReportesForm
         y += 25
 
         Dim widths As Integer = Math.Max(1,dgv.Columns.Count)
-        Dim colWidth As Integer = Math.Max(80,e.MarginBounds.Width  widths)
+        Dim colWidth As Integer = Math.Max(80,e.MarginBounds.Width \ widths)
         Dim x=left
 
         For Each col As DataGridViewColumn In dgv.Columns
