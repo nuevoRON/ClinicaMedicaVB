@@ -143,7 +143,8 @@ Public Class ReportesForm
         printRow=0
         Using dlg As New PrintDialog()
             dlg.Document=printDoc
-            If dlg.ShowDialog()=DialogResult.OK Then
+            If Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Consulta de reporte", "Reportes", "Reporte generado")
+        dlg.ShowDialog()=DialogResult.OK Then
                 printDoc.Print()
             End If
         End Using
