@@ -78,12 +78,13 @@ Public Class UsuariosForm
                 Using cmd=cn.CreateCommand()
                     cmd.CommandText="INSERT INTO Usuarios(Usuario,Clave,Rol,Activo) VALUES($u,$c,$r,$a)"
                     cmd.Parameters.AddWithValue("$u",usuario)
-                    cmd.Parameters.AddWithValue("$c",clave)
+                    cmd.Parameters.AddWithValue("$c",SecurityHelper.HashPassword(clave))
                     cmd.Parameters.AddWithValue("$r",cmbRol.Text)
                     cmd.Parameters.AddWithValue("$a",If(chkActivo.Checked,1,0))
                     cmd.ExecuteNonQuery()
                 End Using
             End Using
+            Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Creación de usuario", "Usuarios", usuario & " | Rol: " & cmbRol.Text)
             MessageBox.Show("Usuario registrado correctamente.")
             CargarUsuarios()
             Limpiar()
@@ -114,6 +115,7 @@ Public Class UsuariosForm
                 cmd.ExecuteNonQuery()
             End Using
         End Using
+        Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, If(activo, "Activación de usuario", "Desactivación de usuario"), "Usuarios", nombre)
         CargarUsuarios()
     End Sub
 
