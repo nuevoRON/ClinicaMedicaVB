@@ -67,6 +67,7 @@ Public Class CitasForm
                 cmd.ExecuteNonQuery()
             End Using
         End Using
+        Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Registro de cita", "Citas", "PacienteId=" & p.Id.ToString())
         MessageBox.Show("Cita registrada.") : Cargar()
     End Sub
 
