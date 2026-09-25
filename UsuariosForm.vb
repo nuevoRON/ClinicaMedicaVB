@@ -11,6 +11,12 @@ Public Class UsuariosForm
     Private dgv As New DataGridView()
 
     Public Sub New()
+        If Not PermissionHelper.PuedeAcceder(Session.CurrentRole, "Usuarios") Then
+            Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Acceso denegado", "Usuarios", "Usuarios")
+            MessageBox.Show("No tiene permisos para acceder a este módulo.", "Acceso restringido", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            AddHandler Me.Load, Sub() Me.Close()
+            Return
+        End If
         Text = "Administración de usuarios"
         Width = 760 : Height = 520
         StartPosition = FormStartPosition.CenterParent
