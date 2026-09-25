@@ -108,6 +108,11 @@ Public Class UsuariosForm
         Dim id=Convert.ToInt32(dgv.SelectedRows(0).Cells("Id").Value)
         Dim nombre=dgv.SelectedRows(0).Cells("Usuario").Value.ToString()
 
+        If nombre.Equals(Session.CurrentUser, StringComparison.OrdinalIgnoreCase) AndAlso Not activo Then
+            MessageBox.Show("No puede desactivar el usuario con el que inició sesión.")
+            Return
+        End If
+
         If nombre.Equals("admin",StringComparison.OrdinalIgnoreCase) AndAlso Not activo Then
             MessageBox.Show("El usuario administrador principal no puede desactivarse.")
             Return
