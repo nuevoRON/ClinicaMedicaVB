@@ -11,6 +11,12 @@ Public Class CitasForm
     Private btn As New Button()
 
     Public Sub New()
+        If Not PermissionHelper.PuedeAcceder(Session.CurrentRole, "Citas") Then
+            Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Acceso denegado", "Citas", Me.Text)
+            MessageBox.Show("No tiene permisos para acceder a este módulo.", "Acceso restringido", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            AddHandler Me.Load, Sub() Me.Close()
+            Return
+        End If
         Text="Citas" : Width=1000 : Height=600 : StartPosition=FormStartPosition.CenterParent
         Controls.Add(New Label With {.Text="Paciente",.Left=20,.Top=25})
         paciente.SetBounds(100,20,260,28) : Controls.Add(paciente)
@@ -78,7 +84,13 @@ Public Class CitasForm
     Private Class ComboItem
         Public Property Id As Integer
         Public Property Nombre As String
-        Public Sub New(i As Integer,n As String) : Id=i : Nombre=n : End Sub
+        Public Sub New(i As Integer,n As String)
+        If Not PermissionHelper.PuedeAcceder(Session.CurrentRole, "Citas") Then
+            Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Acceso denegado", "Citas", Me.Text)
+            MessageBox.Show("No tiene permisos para acceder a este módulo.", "Acceso restringido", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            AddHandler Me.Load, Sub() Me.Close()
+            Return
+        End If : Id=i : Nombre=n : End Sub
         Public Overrides Function ToString() As String : Return Nombre : End Function
     End Class
 End Class
