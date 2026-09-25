@@ -19,6 +19,12 @@ Public Class ReportesForm
     Private printRow As Integer = 0
 
     Public Sub New()
+        If Not PermissionHelper.PuedeAcceder(Session.CurrentRole, "Reportes") Then
+            Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Acceso denegado", "Reportes", Me.Text)
+            MessageBox.Show("No tiene permisos para acceder a este módulo.", "Acceso restringido", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            AddHandler Me.Load, Sub() Me.Close()
+            Return
+        End If
         Text = "Reportes profesionales"
         Width = 1050 : Height = 650
         StartPosition = FormStartPosition.CenterParent
