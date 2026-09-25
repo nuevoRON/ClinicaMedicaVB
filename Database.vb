@@ -99,6 +99,25 @@ INSERT OR IGNORE INTO Medicos(Nombre, Especialidad, Colegiado) VALUES('Médico D
 "
                 cmd.ExecuteNonQuery()
             End Using
+
+            Using migracion = cn.CreateCommand()
+                migracion.CommandText = "SELECT Id, Clave FROM Usuarios WHERE Clave NOT LIKE 'PBKDF2$%'"
+                Using rd = migracion.ExecuteReader()
+                    Dim pendientes As New List(Of Tuple(Of Integer, String))()
+                    While rd.Read()
+                        pendientes.Add(Tuple.Create(rd.GetInt32(0), rd.GetString(1)))
+                    End While
+                    rd.Close()
+                    For Each item In pendientes
+                        Using upd = cn.CreateCommand()
+                            upd.CommandText = "UPDATE Usuarios SET Clave=$c WHERE Id=$id"
+                            upd.Parameters.AddWithValue("$c", SecurityHelper.HashPassword(item.Item2))
+                            upd.Parameters.AddWithValue("$id", item.Item1)
+                            upd.ExecuteNonQuery()
+                        End Using
+                    Next
+                End Using
+            End Using
         End Using
     End Sub
 
