@@ -94,7 +94,7 @@ CREATE TABLE IF NOT EXISTS Recetas(
     Indicaciones TEXT,
     FOREIGN KEY(ConsultaId) REFERENCES Consultas(Id)
 );
-INSERT OR IGNORE INTO Usuarios(Usuario, Clave, Rol) VALUES('admin','admin123','Administrador');
+INSERT OR IGNORE INTO Usuarios(Usuario, Clave, Rol) VALUES('admin', HashPassword('admin123'), 'Administrador');
 INSERT OR IGNORE INTO Medicos(Nombre, Especialidad, Colegiado) VALUES('Médico Demo','Medicina General','DEMO-001');
 "
                 cmd.ExecuteNonQuery()
