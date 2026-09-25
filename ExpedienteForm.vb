@@ -81,6 +81,7 @@ Public Class ExpedienteForm
     End Sub
 
     Private Sub CargarExpediente(sender As Object, e As EventArgs)
+        Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Consulta de expediente", "Expediente", "Paciente seleccionado")
         If paciente.SelectedItem Is Nothing Then Return
         Dim p=DirectCast(paciente.SelectedItem,PacienteItem)
 
