@@ -11,6 +11,12 @@ Public Class BackupForm
     Private txtCarpeta As New TextBox()
 
     Public Sub New()
+        If Not PermissionHelper.PuedeAcceder(Session.CurrentRole, "Backup") Then
+            Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Acceso denegado", "Backup", Me.Text)
+            MessageBox.Show("No tiene permisos para acceder a este módulo.", "Acceso restringido", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            AddHandler Me.Load, Sub() Me.Close()
+            Return
+        End If
         Text = "Copias de seguridad y restauración"
         Width = 920 : Height = 650
         StartPosition = FormStartPosition.CenterParent
