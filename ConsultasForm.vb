@@ -17,6 +17,12 @@ Public Class ConsultasForm
     Private grid As New DataGridView()
 
     Public Sub New()
+        If Not PermissionHelper.PuedeAcceder(Session.CurrentRole, "Consultas") Then
+            Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Acceso denegado", "Consultas", Me.Text)
+            MessageBox.Show("No tiene permisos para acceder a este módulo.", "Acceso restringido", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            AddHandler Me.Load, Sub() Me.Close()
+            Return
+        End If
         Text="Consultas médicas" : Width=1100 : Height=700 : StartPosition=FormStartPosition.CenterParent
         Dim y=20
         AddField("Paciente",paciente,y,True) : y+=38
@@ -91,7 +97,13 @@ Public Class ConsultasForm
     Private Class ComboItem
         Public Property Id As Integer
         Public Property Nombre As String
-        Public Sub New(i As Integer,n As String) : Id=i : Nombre=n : End Sub
+        Public Sub New(i As Integer,n As String)
+        If Not PermissionHelper.PuedeAcceder(Session.CurrentRole, "Consultas") Then
+            Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Acceso denegado", "Consultas", Me.Text)
+            MessageBox.Show("No tiene permisos para acceder a este módulo.", "Acceso restringido", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            AddHandler Me.Load, Sub() Me.Close()
+            Return
+        End If : Id=i : Nombre=n : End Sub
         Public Overrides Function ToString() As String : Return Nombre : End Function
     End Class
 End Class
