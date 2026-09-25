@@ -25,17 +25,28 @@ Public Class LoginForm
     Private Sub Ingresar(sender As Object, e As EventArgs)
         Using cn = Database.Connection()
             Using cmd = cn.CreateCommand()
-                cmd.CommandText = "SELECT Rol FROM Usuarios WHERE Usuario=$u AND Clave=$c AND Activo=1"
+                cmd.CommandText = "SELECT Clave, Rol FROM Usuarios WHERE Usuario=$u AND Activo=1"
                 cmd.Parameters.AddWithValue("$u", txtUsuario.Text.Trim())
                 cmd.Parameters.AddWithValue("$c", txtClave.Text)
-                Dim rol = cmd.ExecuteScalar()
-                If rol IsNot Nothing Then
-                    Database.RegistrarAccion(txtUsuario.Text.Trim(), rol.ToString(), "Inicio de sesión", "Seguridad", "Acceso autorizado")
+                Dim rol As String = ""
+                Dim claveAlmacenada As String = ""
+                Using rd = cmd.ExecuteReader()
+                    If rd.Read() Then
+                        claveAlmacenada = rd.GetString(0)
+                        rol = rd.GetString(1)
+                    End If
+                End Using
+                If Not String.IsNullOrWhiteSpace(rol) AndAlso SecurityHelper.VerifyPassword(txtClave.Text, claveAlmacenada) Then
+                    Session.CurrentUser = txtUsuario.Text.Trim()
+                    Session.CurrentRole = rol
+                    Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Inicio de sesión", "Seguridad", "Acceso autorizado")
                     Hide()
-                    Using f As New MainForm(txtUsuario.Text.Trim(), rol.ToString())
+                    Using f As New MainForm(Session.CurrentUser, Session.CurrentRole)
                         f.ShowDialog()
                     End Using
                     Show()
+                    Session.CurrentUser = ""
+                    Session.CurrentRole = ""
                     txtClave.Clear()
                 Else
                     Database.RegistrarAccion(txtUsuario.Text.Trim(), "", "Intento de inicio de sesión", "Seguridad", "Acceso rechazado")
