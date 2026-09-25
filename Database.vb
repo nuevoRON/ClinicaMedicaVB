@@ -177,6 +177,44 @@ CREATE TABLE IF NOT EXISTS Recetas(
         End Using
     End Sub
 
+    Public Sub RestoreDatabase(origen As String)
+        If String.IsNullOrWhiteSpace(origen) Then
+            Throw New ArgumentException("Debe indicar el archivo de respaldo.", NameOf(origen))
+        End If
+
+        Dim origenCompleto = Path.GetFullPath(origen)
+        Dim dbCompleto = Path.GetFullPath(DbPath)
+
+        If Not File.Exists(origenCompleto) Then
+            Throw New FileNotFoundException("No existe el archivo de respaldo.", origenCompleto)
+        End If
+
+        If origenCompleto.Equals(dbCompleto, StringComparison.OrdinalIgnoreCase) Then
+            Throw New IOException("El archivo de respaldo no puede ser la base de datos activa.")
+        End If
+
+        Dim temporal = dbCompleto & ".restore.tmp"
+
+        Try
+            File.Copy(origenCompleto, temporal, True)
+
+            ' Libera conexiones SQLite antes de reemplazar el archivo activo.
+            SqliteConnection.ClearAllPools()
+
+            If File.Exists(dbCompleto) Then
+                File.Delete(dbCompleto)
+            End If
+
+            File.Move(temporal, dbCompleto)
+        Catch
+            Try
+                If File.Exists(temporal) Then File.Delete(temporal)
+            Catch
+            End Try
+            Throw
+        End Try
+    End Sub
+
     Public Function CarpetaCopias() As String
         Dim cfg = BackupSettings.Cargar()
         Dim ruta = cfg.ObtenerCarpetaDestino()
