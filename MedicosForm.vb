@@ -39,6 +39,7 @@ Public Class MedicosForm
                 cmd.ExecuteNonQuery()
             End Using
         End Using
+        Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Registro de médico", "Medicos", txtNombre.Text.Trim())
         MessageBox.Show("Médico registrado.") : txtNombre.Clear() : txtEspecialidad.Clear() : txtColegiado.Clear() : Cargar()
     End Sub
 
