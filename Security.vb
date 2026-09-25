@@ -3,6 +3,16 @@ Imports System.Security.Cryptography
 Public Module Session
     Public Property CurrentUser As String = ""
     Public Property CurrentRole As String = ""
+
+    Public Sub Start(usuario As String, rol As String)
+        CurrentUser = usuario
+        CurrentRole = rol
+    End Sub
+
+    Public Sub EndSession()
+        CurrentUser = ""
+        CurrentRole = ""
+    End Sub
 End Module
 
 Public Module SecurityHelper
