@@ -94,8 +94,25 @@ CREATE TABLE IF NOT EXISTS Recetas(
     Indicaciones TEXT,
     FOREIGN KEY(ConsultaId) REFERENCES Consultas(Id)
 );
-INSERT OR IGNORE INTO Usuarios(Usuario, Clave, Rol) VALUES('admin', HashPassword('admin123'), 'Administrador');
-INSERT OR IGNORE INTO Medicos(Nombre, Especialidad, Colegiado) VALUES('Médico Demo','Medicina General','DEMO-001');
+";
+                cmd.ExecuteNonQuery()
+            End Using
+
+            Using adminCmd = cn.CreateCommand()
+                adminCmd.CommandText = "INSERT OR IGNORE INTO Usuarios(Usuario, Clave, Rol) VALUES($u,$c,$r)"
+                adminCmd.Parameters.AddWithValue("$u", "admin")
+                adminCmd.Parameters.AddWithValue("$c", SecurityHelper.HashPassword("admin123"))
+                adminCmd.Parameters.AddWithValue("$r", "Administrador")
+                adminCmd.ExecuteNonQuery()
+            End Using
+
+            Using medicoCmd = cn.CreateCommand()
+                medicoCmd.CommandText = "INSERT OR IGNORE INTO Medicos(Nombre, Especialidad, Colegiado) VALUES($n,$e,$c)"
+                medicoCmd.Parameters.AddWithValue("$n", "Médico Demo")
+                medicoCmd.Parameters.AddWithValue("$e", "Medicina General")
+                medicoCmd.Parameters.AddWithValue("$c", "DEMO-001")
+                medicoCmd.ExecuteNonQuery()
+            End Using
 "
                 cmd.ExecuteNonQuery()
             End Using
