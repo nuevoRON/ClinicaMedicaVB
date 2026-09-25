@@ -139,12 +139,6 @@ Public Class ExpedienteForm
         Private ReadOnly Identidad As String
         Private ReadOnly NombreCompleto As String
         Public Sub New(id As Integer,identidad As String,nombre As String)
-        If Not PermissionHelper.PuedeAcceder(Session.CurrentRole, "Expediente") Then
-            Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Acceso denegado", "Expediente", Me.Text)
-            MessageBox.Show("No tiene permisos para acceder a este módulo.", "Acceso restringido", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-            AddHandler Me.Load, Sub() Me.Close()
-            Return
-        End If
             Me.Id=id : Me.Identidad=identidad : Me.NombreCompleto=nombre
         End Sub
         Public Overrides Function ToString() As String
