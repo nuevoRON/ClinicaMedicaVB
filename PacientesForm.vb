@@ -21,6 +21,12 @@ Public Class PacientesForm
     Private btnExpediente As New Button()
 
     Public Sub New()
+        If Not PermissionHelper.PuedeAcceder(Session.CurrentRole, "Pacientes") Then
+            Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Acceso denegado", "Pacientes", "Pacientes")
+            MessageBox.Show("No tiene permisos para acceder a este módulo.", "Acceso restringido", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            AddHandler Me.Load, Sub() Me.Close()
+            Return
+        End If
         Text="Pacientes" : Width=1150 : Height=700 : StartPosition=FormStartPosition.CenterParent
 
         Dim y=20
