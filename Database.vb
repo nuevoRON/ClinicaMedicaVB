@@ -95,15 +95,6 @@ CREATE TABLE IF NOT EXISTS Recetas(
     FOREIGN KEY(ConsultaId) REFERENCES Consultas(Id)
 );
 INSERT OR IGNORE INTO Usuarios(Usuario, Clave, Rol) VALUES('admin', HashPassword('admin123'), 'Administrador');
-                Using mig = cn.CreateCommand()
-                    mig.CommandText = "SELECT Clave FROM Usuarios WHERE Usuario='admin'"
-                    Dim adminClave = Convert.ToString(mig.ExecuteScalar())
-                    If Not SecurityHelper.IsHashed(adminClave) Then
-                        mig.CommandText = "UPDATE Usuarios SET Clave=$c WHERE Usuario='admin'"
-                        mig.Parameters.AddWithValue("$c", SecurityHelper.HashPassword("admin123"))
-                        mig.ExecuteNonQuery()
-                    End If
-                End Using
 INSERT OR IGNORE INTO Medicos(Nombre, Especialidad, Colegiado) VALUES('Médico Demo','Medicina General','DEMO-001');
 "
                 cmd.ExecuteNonQuery()
