@@ -124,6 +124,7 @@ Public Class BackupForm
                 If dlg.ShowDialog() <> DialogResult.OK Then Return
 
                 Database.BackupDatabase(dlg.FileName)
+                Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Creación de respaldo", "Backup", Path.GetFileName(dlg.FileName))
                 lblEstado.Text = $"Copia creada correctamente: {Path.GetFileName(dlg.FileName)}"
                 CargarCopias()
                 MessageBox.Show("La copia de seguridad se creó correctamente.", "Copia completada")
@@ -151,11 +152,13 @@ Public Class BackupForm
         Try
             Dim preventiva = Path.Combine(Database.CarpetaCopias(), $"antes_restaurar_{DateTime.Now:yyyyMMdd_HHmmss}.db")
             Database.BackupDatabase(preventiva)
+            Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Respaldo preventivo", "Backup", Path.GetFileName(preventiva))
 
             GC.Collect()
             GC.WaitForPendingFinalizers()
 
             File.Copy(ruta, Database.DbPath, True)
+            Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Restauración de respaldo", "Backup", Path.GetFileName(ruta))
 
             lblEstado.Text = $"Base de datos restaurada desde: {Path.GetFileName(ruta)}"
             MessageBox.Show("Restauración completada. Cierre y vuelva a abrir el sistema para trabajar con la información restaurada.", "Restauración completada", MessageBoxButtons.OK, MessageBoxIcon.Information)
