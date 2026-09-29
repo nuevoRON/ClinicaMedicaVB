@@ -54,7 +54,9 @@ Public Class BackupForm
 
         AddHandler btnCrear.Click, AddressOf CrearCopia
         AddHandler btnRestaurar.Click, AddressOf RestaurarCopia
-        AddHandler btnActualizar.Click, AddressOf CargarCopias
+        AddHandler btnActualizar.Click, Sub(sender As Object, e As EventArgs)
+                                       CargarCopias()
+                                   End Sub
         AddHandler btnConfiguracion.Click, AddressOf GuardarConfiguracion
         AddHandler btnRuta.Click, AddressOf SeleccionarCarpeta
 
