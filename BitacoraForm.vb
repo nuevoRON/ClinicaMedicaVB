@@ -35,7 +35,9 @@ Public Class BitacoraForm
 
         Dim btnBuscar As New Button With {.Text = "Filtrar", .Left = 20, .Top = 85, .Width = 100, .Height = 32}
         Dim btnTodos As New Button With {.Text = "Mostrar todo", .Left = 130, .Top = 85, .Width = 110, .Height = 32}
-        AddHandler btnBuscar.Click, AddressOf Cargar
+        AddHandler btnBuscar.Click, Sub(sender As Object, e As EventArgs)
+                                       Cargar()
+                                   End Sub
         AddHandler btnTodos.Click, Sub()
                                        txtUsuario.Clear()
                                        txtModulo.Clear()
