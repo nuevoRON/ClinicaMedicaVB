@@ -4,7 +4,8 @@ Imports System.Windows.Forms
 Module Program
     <STAThread>
     Public Sub Main()
-        ApplicationConfiguration.Initialize()
+        Application.EnableVisualStyles()
+        Application.SetCompatibleTextRenderingDefault(False)
         Database.Initialize()
 
         Try
