@@ -18,7 +18,8 @@ Public Class CitasForm
     Private ReadOnly ColorPanel As Color = Color.White
     Private ReadOnly ColorPrimario As Color = Color.FromArgb(35, 99, 160)
     Private ReadOnly ColorTexto As Color = Color.FromArgb(45, 55, 72)
-    Private ReadOnly ColorBorde As Color = Color.FromArgb(210, 216, 224)
+    Private ReadOnly ColorBorde As Color = Color.FromArgb(185, 195, 207)
+    Private ReadOnly ColorBordeActivo As Color = Color.FromArgb(35, 99, 160)
 
     Public Sub New()
         If Not PermissionHelper.PuedeAcceder(Session.CurrentRole, "Citas") Then
@@ -44,6 +45,12 @@ Public Class CitasForm
 
         ConstruirInterfaz()
         CargarCombos()
+
+        ' Permite programar citas desde hoy hasta cinco años en el futuro.
+        fecha.MinDate = DateTime.Today
+        fecha.MaxDate = DateTime.Today.AddYears(5)
+        fecha.Value = ObtenerProximaFechaDisponible()
+
         Cargar()
     End Sub
 
@@ -84,50 +91,53 @@ Public Class CitasForm
         panelRegistro.Controls.Add(encabezado)
 
         CrearEtiqueta(panelRegistro, "Paciente", 22, 62)
-        paciente.SetBounds(22, 84, 340, 32)
+        CrearCampoEnmarcado(panelRegistro, paciente, 22, 84, 340, 34)
         paciente.DropDownStyle = ComboBoxStyle.DropDownList
         paciente.FlatStyle = FlatStyle.Flat
-        paciente.BackColor = Color.White
         paciente.Font = New Font("Segoe UI", 9.5F)
-        panelRegistro.Controls.Add(paciente)
 
         CrearEtiqueta(panelRegistro, "Médico", 22, 126)
-        medico.SetBounds(22, 148, 340, 32)
+        CrearCampoEnmarcado(panelRegistro, medico, 22, 148, 340, 34)
         medico.DropDownStyle = ComboBoxStyle.DropDownList
         medico.FlatStyle = FlatStyle.Flat
-        medico.BackColor = Color.White
         medico.Font = New Font("Segoe UI", 9.5F)
-        panelRegistro.Controls.Add(medico)
 
         CrearEtiqueta(panelRegistro, "Fecha y hora", 22, 190)
-        fecha.SetBounds(22, 212, 340, 32)
+        CrearCampoEnmarcado(panelRegistro, fecha, 22, 212, 340, 34)
         fecha.Format = DateTimePickerFormat.Custom
         fecha.CustomFormat = "dd/MM/yyyy HH:mm"
-        fecha.ShowUpDown = True
+        fecha.ShowUpDown = False
         fecha.Font = New Font("Segoe UI", 9.5F)
-        panelRegistro.Controls.Add(fecha)
+        fecha.MinDate = DateTime.Today
+        fecha.MaxDate = DateTime.Today.AddYears(5)
+        fecha.Value = ObtenerProximaFechaDisponible()
 
-        CrearEtiqueta(panelRegistro, "Motivo de la cita", 22, 254)
-        motivo.SetBounds(22, 276, 340, 64)
+        Dim ayudaFecha As New Label With {
+            .Text = "Seleccione una fecha futura en el calendario.",
+            .AutoSize = True,
+            .Font = New Font("Segoe UI", 8.0F),
+            .ForeColor = Color.FromArgb(105, 115, 130),
+            .Location = New Point(24, 247)
+        }
+        panelRegistro.Controls.Add(ayudaFecha)
+
+        CrearEtiqueta(panelRegistro, "Motivo de la cita", 22, 274)
+        CrearCampoEnmarcado(panelRegistro, motivo, 22, 296, 340, 64)
         motivo.Multiline = True
         motivo.ScrollBars = ScrollBars.Vertical
         motivo.Font = New Font("Segoe UI", 9.5F)
-        motivo.BorderStyle = BorderStyle.FixedSingle
-        motivo.BackColor = Color.White
-        panelRegistro.Controls.Add(motivo)
+        motivo.Padding = New Padding(5, 4, 5, 4)
 
-        CrearEtiqueta(panelRegistro, "Estado", 22, 350)
-        estado.SetBounds(22, 372, 340, 32)
+        CrearEtiqueta(panelRegistro, "Estado", 22, 374)
+        CrearCampoEnmarcado(panelRegistro, estado, 22, 396, 340, 34)
         estado.DropDownStyle = ComboBoxStyle.DropDownList
         estado.FlatStyle = FlatStyle.Flat
-        estado.BackColor = Color.White
         estado.Font = New Font("Segoe UI", 9.5F)
         estado.Items.AddRange({"Pendiente", "Confirmada", "Atendida", "Cancelada"})
         estado.SelectedIndex = 0
-        panelRegistro.Controls.Add(estado)
 
         btn.Text = "Guardar cita"
-        btn.SetBounds(22, 430, 340, 42)
+        btn.SetBounds(22, 454, 340, 42)
         btn.BackColor = ColorPrimario
         btn.ForeColor = Color.White
         btn.FlatStyle = FlatStyle.Flat
@@ -167,7 +177,7 @@ Public Class CitasForm
         grid.BackgroundColor = Color.White
         grid.BorderStyle = BorderStyle.None
         grid.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal
-        grid.GridColor = ColorBorde
+        grid.GridColor = Color.FromArgb(210, 216, 224)
         grid.RowHeadersVisible = False
         grid.EnableHeadersVisualStyles = False
         grid.ColumnHeadersHeight = 38
@@ -200,6 +210,67 @@ Public Class CitasForm
         contenedor.Controls.Add(etiqueta)
     End Sub
 
+    Private Sub CrearCampoEnmarcado(contenedor As Control, control As Control,
+                                    x As Integer, y As Integer, ancho As Integer, alto As Integer)
+
+        Dim marco As New Panel With {
+            .BackColor = ColorBorde,
+            .Location = New Point(x, y),
+            .Size = New Size(ancho, alto),
+            .Padding = New Padding(1),
+            .Tag = control
+        }
+
+        control.Dock = DockStyle.Fill
+        control.Margin = New Padding(0)
+        control.BackColor = Color.White
+
+        If TypeOf control Is TextBox Then
+            DirectCast(control, TextBox).BorderStyle = BorderStyle.None
+        ElseIf TypeOf control Is ComboBox Then
+            DirectCast(control, ComboBox).FlatStyle = FlatStyle.Flat
+        End If
+
+        marco.Controls.Add(control)
+        contenedor.Controls.Add(marco)
+
+        AddHandler control.Enter,
+            Sub(sender As Object, e As EventArgs)
+                marco.BackColor = ColorBordeActivo
+            End Sub
+
+        AddHandler control.Leave,
+            Sub(sender As Object, e As EventArgs)
+                marco.BackColor = ColorBorde
+            End Sub
+    End Sub
+
+    Private Function ObtenerProximaFechaDisponible() As DateTime
+        Dim propuesta = DateTime.Now.AddMinutes(30)
+
+        ' Redondea a intervalos de 30 minutos para facilitar la programación.
+        Dim minutos = propuesta.Minute
+        Dim minutosRedondeados = ((minutos + 29)  30) * 30
+
+        If minutosRedondeados >= 60 Then
+            propuesta = New DateTime(propuesta.Year, propuesta.Month, propuesta.Day,
+                                     propuesta.Hour, 0, 0).AddHours(1)
+        Else
+            propuesta = New DateTime(propuesta.Year, propuesta.Month, propuesta.Day,
+                                     propuesta.Hour, minutosRedondeados, 0)
+        End If
+
+        If propuesta < DateTime.Now Then
+            propuesta = DateTime.Now.AddHours(1)
+        End If
+
+        If propuesta < DateTime.Today Then
+            propuesta = DateTime.Today
+        End If
+
+        Return propuesta
+    End Function
+
     Private Sub CargarCombos()
         paciente.Items.Clear()
         medico.Items.Clear()
@@ -227,8 +298,16 @@ Public Class CitasForm
 
     Private Sub Guardar(sender As Object, e As EventArgs)
         If paciente.SelectedItem Is Nothing Then
-            MessageBox.Show("Seleccione un paciente.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            MessageBox.Show("Seleccione un paciente.", "Validación",
+                            MessageBoxButtons.OK, MessageBoxIcon.Information)
             paciente.Focus()
+            Return
+        End If
+
+        If fecha.Value < DateTime.Now Then
+            MessageBox.Show("La fecha y hora de la cita no puede ser anterior al momento actual.",
+                            "Fecha no válida", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            fecha.Focus()
             Return
         End If
 
@@ -264,7 +343,7 @@ Public Class CitasForm
 
         motivo.Clear()
         estado.SelectedIndex = 0
-        fecha.Value = DateTime.Now.AddMinutes(30)
+        fecha.Value = ObtenerProximaFechaDisponible()
         Cargar()
     End Sub
 
