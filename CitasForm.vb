@@ -250,7 +250,7 @@ Public Class CitasForm
 
         ' Redondea a intervalos de 30 minutos para facilitar la programación.
         Dim minutos = propuesta.Minute
-        Dim minutosRedondeados = ((minutos + 29)  30) * 30
+        Dim minutosRedondeados = ((minutos + 29) \ 30) * 30
 
         If minutosRedondeados >= 60 Then
             propuesta = New DateTime(propuesta.Year, propuesta.Month, propuesta.Day,
