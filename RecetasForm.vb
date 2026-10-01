@@ -17,6 +17,19 @@ Public Class RecetasForm
     Private btnImprimir As New Button()
     Private recetaSeleccionada As Integer = 0
     Private textoImpresion As String = ""
+    Private pacienteNombreImpresion As String=""
+    Private identidadImpresion As String=""
+    Private nacimientoImpresion As String=""
+    Private diagnosticoImpresion As String=""
+    Private medicamentoImpresion As String=""
+    Private dosisImpresion As String=""
+    Private frecuenciaImpresion As String=""
+    Private duracionImpresion As String=""
+    Private indicacionesImpresion As String=""
+    Private medicoImpresion As String=""
+    Private especialidadImpresion As String=""
+    Private colegiadoImpresion As String=""
+
 
     Public Sub New()
         If Not PermissionHelper.PuedeAcceder(Session.CurrentRole, "Recetas") Then
@@ -72,6 +85,16 @@ Public Class RecetasForm
         grid.ReadOnly=True : grid.AllowUserToAddRows=False : grid.MultiSelect=False
         grid.SelectionMode=DataGridViewSelectionMode.FullRowSelect
         grid.AutoSizeColumnsMode=DataGridViewAutoSizeColumnsMode.Fill
+        grid.AutoGenerateColumns=False
+        grid.Columns.Clear()
+        Dim colId As New DataGridViewTextBoxColumn With {.Name="Id",.DataPropertyName="Id",.HeaderText="Id",.Visible=False}
+        Dim colFecha As New DataGridViewTextBoxColumn With {.Name="Fecha",.DataPropertyName="Fecha",.HeaderText="Fecha",.FillWeight=75}
+        Dim colPaciente As New DataGridViewTextBoxColumn With {.Name="Paciente",.DataPropertyName="Paciente",.HeaderText="Paciente",.FillWeight=130}
+        Dim colMedicamento As New DataGridViewTextBoxColumn With {.Name="Medicamento",.DataPropertyName="Medicamento",.HeaderText="Medicamento",.FillWeight=125}
+        Dim colDosis As New DataGridViewTextBoxColumn With {.Name="Dosis",.DataPropertyName="Dosis",.HeaderText="Dosis",.FillWeight=85}
+        Dim colFrecuencia As New DataGridViewTextBoxColumn With {.Name="Frecuencia",.DataPropertyName="Frecuencia",.HeaderText="Frecuencia",.FillWeight=90}
+        Dim colDuracion As New DataGridViewTextBoxColumn With {.Name="Duracion",.DataPropertyName="Duracion",.HeaderText="Duración",.FillWeight=75}
+        grid.Columns.AddRange({colId,colFecha,colPaciente,colMedicamento,colDosis,colFrecuencia,colDuracion})
         grid.BackgroundColor=Color.White : grid.BorderStyle=BorderStyle.None : grid.RowHeadersVisible=False
         grid.EnableHeadersVisualStyles=False
         grid.ColumnHeadersDefaultCellStyle.BackColor=Color.FromArgb(31,55,83)
@@ -159,14 +182,13 @@ Public Class RecetasForm
         Dim dt As New DataTable()
         Using cn=Database.Connection()
             Using cmd=cn.CreateCommand()
-                cmd.CommandText="SELECT R.Id,R.Fecha,P.Nombre||' '||P.Apellidos AS Paciente,R.Medicamento,R.Dosis,R.Frecuencia,R.Duracion FROM Recetas R JOIN Consultas C ON C.Id=R.ConsultaId JOIN Pacientes P ON P.Id=C.PacienteId ORDER BY R.Id DESC"
+                cmd.CommandText="SELECT R.Id,substr(R.Fecha,1,10) AS Fecha,P.Nombre||' '||P.Apellidos AS Paciente,R.Medicamento,R.Dosis,R.Frecuencia,R.Duracion FROM Recetas R JOIN Consultas C ON C.Id=R.ConsultaId JOIN Pacientes P ON P.Id=C.PacienteId ORDER BY R.Id DESC"
                 Using rd=cmd.ExecuteReader()
                     dt.Load(rd)
                 End Using
             End Using
         End Using
         grid.DataSource=dt
-        If grid.Columns.Contains("Id") Then grid.Columns("Id").Visible=False
     End Sub
 
     Private Sub Imprimir(sender As Object,e As EventArgs)
@@ -181,40 +203,79 @@ Public Class RecetasForm
                 cmd.Parameters.AddWithValue("$id",recetaSeleccionada)
                 Using rd=cmd.ExecuteReader()
                     If Not rd.Read() Then Return
-                    textoImpresion="CLÍNICA MÉDICA" & Environment.NewLine &
-                        "RECETA MÉDICA" & Environment.NewLine &
-                        "Fecha de emisión: " & rd("Fecha").ToString() & Environment.NewLine & Environment.NewLine &
-                        "PACIENTE" & Environment.NewLine &
-                        "Nombre: " & rd("Paciente").ToString() & Environment.NewLine &
-                        "Identidad: " & rd("Identidad").ToString() & Environment.NewLine &
-                        "Fecha de nacimiento: " & rd("FechaNacimiento").ToString() & Environment.NewLine & Environment.NewLine &
-                        "Diagnóstico: " & rd("Diagnostico").ToString() & Environment.NewLine & Environment.NewLine &
-                        "Rp/" & Environment.NewLine &
-                        "Medicamento: " & rd("Medicamento").ToString() & Environment.NewLine &
-                        "Dosis: " & rd("Dosis").ToString() & Environment.NewLine &
-                        "Frecuencia: " & rd("Frecuencia").ToString() & Environment.NewLine &
-                        "Duración: " & rd("Duracion").ToString() & Environment.NewLine &
-                        "Indicaciones: " & rd("Indicaciones").ToString() & Environment.NewLine & Environment.NewLine & Environment.NewLine &
-                        "Médico: " & rd("Medico").ToString() & Environment.NewLine &
-                        "Especialidad: " & rd("Especialidad").ToString() & Environment.NewLine &
-                        "Colegiado: " & rd("Colegiado").ToString() & Environment.NewLine & Environment.NewLine &
-                        "Firma y sello: __________________________________"
+                    pacienteNombreImpresion=rd("Paciente").ToString()
+                    identidadImpresion=rd("Identidad").ToString()
+                    nacimientoImpresion=rd("FechaNacimiento").ToString()
+                    diagnosticoImpresion=rd("Diagnostico").ToString()
+                    medicamentoImpresion=rd("Medicamento").ToString()
+                    dosisImpresion=rd("Dosis").ToString()
+                    frecuenciaImpresion=rd("Frecuencia").ToString()
+                    duracionImpresion=rd("Duracion").ToString()
+                    indicacionesImpresion=rd("Indicaciones").ToString()
+                    medicoImpresion=rd("Medico").ToString()
+                    especialidadImpresion=rd("Especialidad").ToString()
+                    colegiadoImpresion=rd("Colegiado").ToString()
                 End Using
             End Using
         End Using
 
         Dim pd As New PrintDocument()
-        pd.DefaultPageSettings.Margins=New Margins(65,65,55,55)
+        pd.DefaultPageSettings.Margins=New Margins(38,38,32,32)
+        pd.DefaultPageSettings.Landscape=False
         AddHandler pd.PrintPage,Sub(s,args)
-            Dim ancho=args.MarginBounds.Width
-            Using titleFont As New Font("Segoe UI",15,FontStyle.Bold), sectionFont As New Font("Segoe UI",10,FontStyle.Bold), bodyFont As New Font("Segoe UI",10)
-                Dim y=args.MarginBounds.Top
-                args.Graphics.DrawString("CLÍNICA MÉDICA",titleFont,Brushes.Navy,args.MarginBounds.Left,y)
-                y+=34
-                args.Graphics.DrawLine(Pens.SteelBlue,args.MarginBounds.Left,y,args.MarginBounds.Right,y)
-                y+=20
-                args.Graphics.DrawString(textoImpresion,bodyFont,Brushes.Black,New RectangleF(args.MarginBounds.Left,y,ancho,args.MarginBounds.Height-y+args.MarginBounds.Top))
+            Dim g=args.Graphics
+            Dim leftF=args.MarginBounds.Left
+            Dim rightF=args.MarginBounds.Right
+            Dim widthF=args.MarginBounds.Width
+            Dim y As Single=args.MarginBounds.Top
+            Using titleFont As New Font("Segoe UI",16,FontStyle.Bold),
+                  subFont As New Font("Segoe UI",9,FontStyle.Bold),
+                  labelFont As New Font("Segoe UI",8,FontStyle.Bold),
+                  bodyFont As New Font("Segoe UI",9),
+                  smallFont As New Font("Segoe UI",8),
+                  linePen As New Pen(Color.FromArgb(75,105,140),1),
+                  borderPen As New Pen(Color.FromArgb(175,190,205),1),
+                  sf As New StringFormat()
+                sf.Trimming=StringTrimming.Word
+                g.DrawString("CLÍNICA MÉDICA",titleFont,Brushes.Navy,leftF,y)
+                g.DrawString("RECETA MÉDICA",subFont,Brushes.Black,leftF,y+27)
+                g.DrawString("Fecha: " & DateTime.Now.ToString("dd/MM/yyyy"),smallFont,Brushes.Black,rightF-150,y+8)
+                y+=49
+                g.DrawLine(linePen,leftF,y,rightF,y)
+                y+=10
+                g.DrawString("DATOS DEL PACIENTE",labelFont,Brushes.Navy,leftF,y)
+                y+=17
+                g.DrawString("Nombre: " & pacienteNombreImpresion,bodyFont,Brushes.Black,leftF,y)
+                g.DrawString("Identidad: " & identidadImpresion,bodyFont,Brushes.Black,leftF+widthF*0.58F,y)
+                y+=19
+                g.DrawString("Fecha de nacimiento: " & nacimientoImpresion,bodyFont,Brushes.Black,leftF,y)
+                y+=25
+                g.DrawString("Diagnóstico: " & diagnosticoImpresion,bodyFont,Brushes.Black,New RectangleF(leftF,y,widthF,40),sf)
+                y+=Math.Max(30, g.MeasureString("Diagnóstico: " & diagnosticoImpresion,bodyFont,CInt(widthF)).Height+8)
+                g.DrawLine(borderPen,leftF,y,rightF,y)
+                y+=10
+                g.DrawString("Rp/",New Font("Segoe UI",13,FontStyle.Bold),Brushes.Navy,leftF,y)
+                y+=25
+                g.DrawString("MEDICAMENTO",labelFont,Brushes.Navy,leftF,y)
+                y+=17
+                g.DrawString(medicamentoImpresion,New Font("Segoe UI",11,FontStyle.Bold),Brushes.Black,New RectangleF(leftF,y,widthF,45),sf)
+                y+=Math.Max(28,g.MeasureString(medicamentoImpresion,New Font("Segoe UI",11,FontStyle.Bold),CInt(widthF)).Height+6)
+                g.DrawString("Dosis: " & dosisImpresion,bodyFont,Brushes.Black,leftF,y) : y+=18
+                g.DrawString("Frecuencia: " & frecuenciaImpresion,bodyFont,Brushes.Black,leftF,y) : y+=18
+                g.DrawString("Duración: " & duracionImpresion,bodyFont,Brushes.Black,leftF,y) : y+=22
+                g.DrawString("Indicaciones:",labelFont,Brushes.Navy,leftF,y) : y+=16
+                Dim rectIndicaciones As New RectangleF(leftF,y,widthF,75)
+                g.DrawString(indicacionesImpresion,bodyFont,Brushes.Black,rectIndicaciones,sf)
+                y+=Math.Min(75,g.MeasureString(indicacionesImpresion,bodyFont,CInt(widthF)).Height)+18
+                g.DrawLine(borderPen,leftF,y,rightF,y)
+                y+=12
+                g.DrawString("Médico: " & medicoImpresion,bodyFont,Brushes.Black,leftF,y) : y+=18
+                g.DrawString("Especialidad: " & especialidadImpresion & "     Colegiado: " & colegiadoImpresion,smallFont,Brushes.Black,leftF,y)
+                y+=42
+                g.DrawLine(Pens.Black,leftF+widthF*0.55F,y,rightF,y)
+                g.DrawString("Firma y sello del profesional",smallFont,Brushes.Black,leftF+widthF*0.55F,y+5)
             End Using
+            args.HasMorePages=False
         End Sub
         Using dlg As New PrintPreviewDialog()
             dlg.Document=pd
