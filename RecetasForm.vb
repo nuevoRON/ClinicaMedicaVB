@@ -54,6 +54,9 @@ Public Class RecetasForm
         Controls.Add(panel)
         panel.Controls.Add(New Label With {.Text="Nueva prescripción",.Left=20,.Top=18,.AutoSize=True,.Font=New Font("Segoe UI Semibold",13),.ForeColor=Color.FromArgb(35,99,160)})
         AddField(panel,"Paciente",paciente,60,True)
+        paciente.Items.Clear()
+        paciente.SelectedIndex=-1
+        paciente.Text=""
         AddField(panel,"Medicamento",medicamento,112)
         AddField(panel,"Dosis",dosis,164)
         AddField(panel,"Frecuencia",frecuencia,216)
@@ -69,6 +72,7 @@ Public Class RecetasForm
         btnGuardar.SetBounds(20,460,345,42)
         EstiloBoton(btnGuardar,Color.FromArgb(28,112,91),Color.White)
         panel.Controls.Add(btnGuardar)
+        AddHandler paciente.SelectedIndexChanged,AddressOf PacienteSeleccionado
         AddHandler btnGuardar.Click,AddressOf Guardar
 
         btnImprimir.Text="Vista previa / Imprimir seleccionada"
@@ -127,18 +131,57 @@ Public Class RecetasForm
     End Sub
 
     Private Sub CargarPacientes()
+        paciente.BeginUpdate()
         paciente.Items.Clear()
+        paciente.SelectedIndex=-1
+        paciente.Text=""
+        Dim encontrados As Integer=0
         Using cn=Database.Connection()
             Using cmd=cn.CreateCommand()
-                cmd.CommandText="SELECT Id,Identidad,Nombre||' '||Apellidos AS Nombre FROM Pacientes ORDER BY Apellidos,Nombre"
+                cmd.CommandText="SELECT DISTINCT P.Id,P.Identidad,P.Nombre||' '||P.Apellidos AS Nombre FROM Pacientes P INNER JOIN Consultas C ON C.PacienteId=P.Id WHERE date(C.FechaHora)=date('now','localtime') ORDER BY P.Apellidos,P.Nombre"
                 Using rd=cmd.ExecuteReader()
                     While rd.Read()
                         paciente.Items.Add(New Item(CInt(rd("Id")),rd("Nombre").ToString() & " · " & rd("Identidad").ToString()))
+                        encontrados+=1
                     End While
                 End Using
             End Using
         End Using
-        If paciente.Items.Count>0 Then paciente.SelectedIndex=0
+        paciente.EndUpdate()
+        paciente.SelectedIndex=-1
+        paciente.Text=""
+        paciente.Enabled=encontrados>0
+        If encontrados=0 Then
+            paciente.Items.Clear()
+            paciente.Text=""
+            paciente.Enabled=False
+            MessageBox.Show("No hay pacientes con consulta registrada durante el día de hoy. Registre primero la atención clínica.", "Sin pacientes atendidos", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            paciente.Enabled=True
+        End If
+    End Sub
+
+    Private Sub PacienteSeleccionado(sender As Object,e As EventArgs)
+        If paciente.SelectedItem Is Nothing Then Return
+        Dim p=DirectCast(paciente.SelectedItem,Item)
+        CargarDatosAtencionPaciente(p.Id)
+    End Sub
+
+    Private Sub CargarDatosAtencionPaciente(pacienteId As Integer)
+        ' La receta se vincula a una consulta de hoy para el paciente elegido.
+        Using cn=Database.Connection()
+            Using cmd=cn.CreateCommand()
+                cmd.CommandText="SELECT C.Diagnostico,C.MedicoId,M.Nombre AS Medico,M.Especialidad,M.Colegiado FROM Consultas C LEFT JOIN Medicos M ON M.Id=C.MedicoId WHERE C.PacienteId=$p AND date(C.FechaHora)=date('now','localtime') ORDER BY C.FechaHora DESC,C.Id DESC LIMIT 1"
+                cmd.Parameters.AddWithValue("$p",pacienteId)
+                Using rd=cmd.ExecuteReader()
+                    If rd.Read() Then
+                        diagnosticoImpresion=If(rd("Diagnostico") Is DBNull.Value,"",rd("Diagnostico").ToString())
+                        medicoImpresion=If(rd("Medico") Is DBNull.Value,"",rd("Medico").ToString())
+                        especialidadImpresion=If(rd("Especialidad") Is DBNull.Value,"",rd("Especialidad").ToString())
+                        colegiadoImpresion=If(rd("Colegiado") Is DBNull.Value,"",rd("Colegiado").ToString())
+                    End If
+                End Using
+            End Using
+        End Using
     End Sub
 
     Private Sub Guardar(sender As Object,e As EventArgs)
@@ -151,11 +194,11 @@ Public Class RecetasForm
         Dim consultaId As Integer
         Using cn=Database.Connection()
             Using cmd=cn.CreateCommand()
-                cmd.CommandText="SELECT Id FROM Consultas WHERE PacienteId=$p ORDER BY FechaHora DESC,Id DESC LIMIT 1"
+                cmd.CommandText="SELECT Id FROM Consultas WHERE PacienteId=$p AND date(FechaHora)=date('now','localtime') ORDER BY FechaHora DESC,Id DESC LIMIT 1"
                 cmd.Parameters.AddWithValue("$p",p.Id)
                 Dim resultado=cmd.ExecuteScalar()
                 If resultado Is Nothing OrElse resultado Is DBNull.Value Then
-                    MessageBox.Show("Este paciente no tiene una consulta clínica registrada. Registre primero la consulta para vincular correctamente la receta.", "Consulta requerida",MessageBoxButtons.OK,MessageBoxIcon.Warning)
+                    MessageBox.Show("El paciente seleccionado no tiene una consulta registrada hoy. Solo se pueden emitir recetas para pacientes atendidos durante el día actual.", "Consulta requerida",MessageBoxButtons.OK,MessageBoxIcon.Warning)
                     Return
                 End If
                 consultaId=Convert.ToInt32(resultado)
@@ -176,6 +219,8 @@ Public Class RecetasForm
         MessageBox.Show("Receta registrada. Selecciónela en el historial para revisar o imprimir.", "Receta médica",MessageBoxButtons.OK,MessageBoxIcon.Information)
         medicamento.Clear() : dosis.Clear() : frecuencia.Clear() : duracion.Clear() : indicaciones.Clear()
         CargarRecetas()
+        paciente.SelectedIndex=-1
+        paciente.Text=""
     End Sub
 
     Private Sub CargarRecetas()
