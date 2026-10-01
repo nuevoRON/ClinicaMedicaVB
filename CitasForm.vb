@@ -337,12 +337,12 @@ Public Class CitasForm
     Private Sub LimpiarEdicion()
         citaEditandoId = 0
         citaEditandoFechaHora = DateTime.MinValue
+        EstablecerFechaHoraInicial()
         fecha.MinDate = DateTime.Today
         paciente.SelectedIndex = -1
         medico.SelectedIndex = -1
         motivo.Clear()
         estado.SelectedIndex = 0
-        EstablecerFechaHoraInicial()
         btnGuardar.Text = "Guardar cita"
         ActualizarBotones()
     End Sub
