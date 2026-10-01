@@ -303,6 +303,7 @@ Public Class CitasForm
             SeleccionarComboPorId(medico, Convert.ToInt32(fila.Cells("MedicoId").Value))
         End If
         Dim fh = citaEditandoFechaHora
+        fecha.MinDate = New DateTime(1753, 1, 1)
         fecha.Value = fh.Date
         hora.Value = fh
         motivo.Text = If(fila.Cells("Motivo").Value, "").ToString()
@@ -336,6 +337,7 @@ Public Class CitasForm
     Private Sub LimpiarEdicion()
         citaEditandoId = 0
         citaEditandoFechaHora = DateTime.MinValue
+        fecha.MinDate = DateTime.Today
         paciente.SelectedIndex = -1
         medico.SelectedIndex = -1
         motivo.Clear()
