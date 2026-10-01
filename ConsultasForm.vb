@@ -175,6 +175,22 @@ Public Class ConsultasForm
             Return
         End If
 
+        Dim camposObligatorios As New List(Of String)()
+        If medico.SelectedItem Is Nothing Then camposObligatorios.Add("médico")
+        If String.IsNullOrWhiteSpace(motivo.Text) Then camposObligatorios.Add("motivo")
+        If String.IsNullOrWhiteSpace(presion.Text) Then camposObligatorios.Add("presión arterial")
+        If String.IsNullOrWhiteSpace(temperatura.Text) Then camposObligatorios.Add("temperatura")
+        If String.IsNullOrWhiteSpace(frecuencia.Text) Then camposObligatorios.Add("frecuencia cardiaca")
+        If String.IsNullOrWhiteSpace(saturacion.Text) Then camposObligatorios.Add("saturación")
+        If String.IsNullOrWhiteSpace(peso.Text) Then camposObligatorios.Add("peso")
+        If String.IsNullOrWhiteSpace(diagnostico.Text) Then camposObligatorios.Add("diagnóstico")
+        If String.IsNullOrWhiteSpace(tratamiento.Text) Then camposObligatorios.Add("tratamiento")
+        If String.IsNullOrWhiteSpace(observaciones.Text) Then camposObligatorios.Add("observaciones")
+        If camposObligatorios.Count>0 Then
+            MessageBox.Show("Complete todos los campos obligatorios antes de guardar:" & Environment.NewLine & String.Join(", ",camposObligatorios), "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Return
+        End If
+
         Dim p = DirectCast(paciente.SelectedItem, ComboItem)
         Dim mid As Object = DBNull.Value
         If medico.SelectedItem IsNot Nothing Then mid = DirectCast(medico.SelectedItem, ComboItem).Id
