@@ -106,7 +106,7 @@ Public Class MedicosForm
         If fila.Cells("Estado").Value.ToString()<>"Activo" Then Return
         Dim id=Convert.ToInt32(fila.Cells("Id").Value)
         Dim nombre=fila.Cells("Nombre").Value.ToString()
-        If MessageBox.Show("¿Desea dar de baja a "&nombre&"? El registro se conservará para mantener el historial.","Confirmar baja",MessageBoxButtons.YesNo,MessageBoxIcon.Question)<>DialogResult.Yes Then Return
+        If MessageBox.Show("¿Desea dar de baja a " & nombre & "? El registro se conservará para mantener el historial.", "Confirmar baja", MessageBoxButtons.YesNo, MessageBoxIcon.Question) <> DialogResult.Yes Then Return
         Using cn=Database.Connection()
             Using cmd=cn.CreateCommand()
                 cmd.CommandText="UPDATE Medicos SET Activo=0 WHERE Id=$id"
