@@ -19,6 +19,8 @@ Public Class PacientesForm
     Private cmbCampo As New ComboBox()
     Private btnGuardar As New Button()
     Private btnExpediente As New Button()
+    Private btnEditar As New Button()
+    Private pacienteEditandoId As Integer = 0
 
     Public Sub New()
         If Not PermissionHelper.PuedeAcceder(Session.CurrentRole, "Pacientes") Then
@@ -78,6 +80,14 @@ Public Class PacientesForm
         btnExpediente.FlatStyle = FlatStyle.Flat
         btnExpediente.FlatAppearance.BorderSize = 0
         btnExpediente.SetBounds(400,122,190,36)
+        btnEditar.Text = "Modificar paciente"
+        btnEditar.SetBounds(600,122,190,36)
+        btnEditar.BackColor = Color.FromArgb(28,112,91)
+        btnEditar.ForeColor = Color.White
+        btnEditar.FlatStyle = FlatStyle.Flat
+        btnEditar.FlatAppearance.BorderSize = 0
+        btnEditar.Enabled = False
+        AddHandler btnEditar.Click, AddressOf CargarPacienteSeleccionado
         btnExpediente.Enabled=False
 
         AddHandler btnBuscar.Click, AddressOf Buscar
@@ -85,7 +95,7 @@ Public Class PacientesForm
         AddHandler cmbCampo.SelectedIndexChanged, AddressOf BuscarAutomaticamente
         AddHandler btnTodos.Click, Sub() txtBuscar.Clear()
         AddHandler btnExpediente.Click, AddressOf AbrirExpediente
-        AddHandler grid.CellDoubleClick, AddressOf AbrirExpediente
+        AddHandler grid.CellDoubleClick, AddressOf CargarPacienteSeleccionado
 
         grid.SetBounds(400,174,755,500)
         grid.ReadOnly=True
@@ -106,8 +116,11 @@ Public Class PacientesForm
         grid.DefaultCellStyle.SelectionForeColor = Color.FromArgb(25, 45, 68)
         grid.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(247, 250, 253)
 
-        Controls.AddRange({lblBuscar,cmbCampo,txtBuscar,btnBuscar,btnTodos,btnExpediente,grid})
-        AddHandler grid.SelectionChanged, Sub() btnExpediente.Enabled=(grid.SelectedRows.Count>0)
+        Controls.AddRange({lblBuscar,cmbCampo,txtBuscar,btnBuscar,btnTodos,btnExpediente,btnEditar,grid})
+        AddHandler grid.SelectionChanged, Sub() 
+            btnExpediente.Enabled=(grid.SelectedRows.Count>0)
+            btnEditar.Enabled=(grid.SelectedRows.Count>0)
+        End Sub
 
         Cargar()
     End Sub
@@ -140,7 +153,12 @@ Public Class PacientesForm
         Try
             Using cn=Database.Connection()
                 Using cmd=cn.CreateCommand()
-                    cmd.CommandText="INSERT INTO Pacientes(Identidad,Nombre,Apellidos,FechaNacimiento,Sexo,Telefono,Direccion,Alergias,Antecedentes,FechaRegistro) VALUES($i,$n,$a,$f,$s,$t,$d,$al,$an,$r)"
+                    If pacienteEditandoId=0 Then
+                        cmd.CommandText="INSERT INTO Pacientes(Identidad,Nombre,Apellidos,FechaNacimiento,Sexo,Telefono,Direccion,Alergias,Antecedentes,FechaRegistro) VALUES($i,$n,$a,$f,$s,$t,$d,$al,$an,$r)"
+                    Else
+                        cmd.CommandText="UPDATE Pacientes SET Identidad=$i,Nombre=$n,Apellidos=$a,FechaNacimiento=$f,Sexo=$s,Telefono=$t,Direccion=$d,Alergias=$al,Antecedentes=$an WHERE Id=$id"
+                        cmd.Parameters.AddWithValue("$id",pacienteEditandoId)
+                    End If
                     cmd.Parameters.AddWithValue("$i",txtIdentidad.Text.Trim())
                     cmd.Parameters.AddWithValue("$n",txtNombre.Text.Trim())
                     cmd.Parameters.AddWithValue("$a",txtApellidos.Text.Trim())
@@ -150,12 +168,12 @@ Public Class PacientesForm
                     cmd.Parameters.AddWithValue("$d",txtDireccion.Text)
                     cmd.Parameters.AddWithValue("$al",txtAlergias.Text)
                     cmd.Parameters.AddWithValue("$an",txtAntecedentes.Text)
-                    cmd.Parameters.AddWithValue("$r",DateTime.Now.ToString("s"))
+                    If pacienteEditandoId=0 Then cmd.Parameters.AddWithValue("$r",DateTime.Now.ToString("s"))
                     cmd.ExecuteNonQuery()
                 End Using
             End Using
-            Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Registro de paciente", "Pacientes", txtIdentidad.Text.Trim())
-            MessageBox.Show("Paciente registrado.")
+            Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, If(pacienteEditandoId=0,"Registro de paciente","Modificación de paciente"), "Pacientes", txtIdentidad.Text.Trim())
+            MessageBox.Show(If(pacienteEditandoId=0,"Paciente registrado.","Datos del paciente actualizados."))
             Limpiar() : Cargar()
         Catch ex As Exception
             MessageBox.Show("No se pudo guardar: " & ex.Message)
@@ -163,6 +181,8 @@ Public Class PacientesForm
     End Sub
 
     Private Sub Limpiar()
+        pacienteEditandoId=0
+        btnGuardar.Text="Guardar paciente"
         For Each c As Control In {txtIdentidad,txtNombre,txtApellidos,txtTelefono,txtDireccion,txtAlergias,txtAntecedentes}
             c.Text=""
         Next
@@ -204,6 +224,34 @@ Public Class PacientesForm
             End Using
         End Using
         grid.DataSource=dt
+    End Sub
+
+    Private Sub CargarPacienteSeleccionado(sender As Object,e As EventArgs)
+        If grid.SelectedRows.Count=0 Then Return
+        Dim id=Convert.ToInt32(grid.SelectedRows(0).Cells("Id").Value)
+        Using cn=Database.Connection()
+            Using cmd=cn.CreateCommand()
+                cmd.CommandText="SELECT Identidad,Nombre,Apellidos,FechaNacimiento,Sexo,Telefono,Direccion,Alergias,Antecedentes FROM Pacientes WHERE Id=$id"
+                cmd.Parameters.AddWithValue("$id",id)
+                Using rd=cmd.ExecuteReader()
+                    If Not rd.Read() Then Return
+                    pacienteEditandoId=id
+                    txtIdentidad.Text=If(rd("Identidad") Is DBNull.Value,"",rd("Identidad").ToString())
+                    txtNombre.Text=If(rd("Nombre") Is DBNull.Value,"",rd("Nombre").ToString())
+                    txtApellidos.Text=If(rd("Apellidos") Is DBNull.Value,"",rd("Apellidos").ToString())
+                    If rd("FechaNacimiento") IsNot DBNull.Value Then
+                        Dim fechaPaciente As DateTime
+                        If DateTime.TryParse(rd("FechaNacimiento").ToString(),fechaPaciente) Then txtFecha.Value=fechaPaciente
+                    End If
+                    txtSexo.Text=If(rd("Sexo") Is DBNull.Value,"",rd("Sexo").ToString())
+                    txtTelefono.Text=If(rd("Telefono") Is DBNull.Value,"",rd("Telefono").ToString())
+                    txtDireccion.Text=If(rd("Direccion") Is DBNull.Value,"",rd("Direccion").ToString())
+                    txtAlergias.Text=If(rd("Alergias") Is DBNull.Value,"",rd("Alergias").ToString())
+                    txtAntecedentes.Text=If(rd("Antecedentes") Is DBNull.Value,"",rd("Antecedentes").ToString())
+                End Using
+            End Using
+        End Using
+        btnGuardar.Text="Guardar cambios"
     End Sub
 
     Private Sub AbrirExpediente(sender As Object,e As EventArgs)
