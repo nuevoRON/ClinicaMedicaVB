@@ -135,20 +135,15 @@ Public Class ConsultasForm
         b.Font = New Font("Segoe UI Semibold", 9)
     End Sub
 
-    Private Sub AddField(t As String, c As Control, y As Integer, Optional combo As Boolean = False)
-        ControlsAddLabel(t, y)
+    Private Sub AddField(panel As Control, t As String, c As Control, y As Integer, Optional combo As Boolean = False)
+        panel.Controls.Add(New Label With {.Text = t, .Left = 20, .Top = y + 5, .Width = 120, .ForeColor = Color.FromArgb(45, 55, 72), .Font = New Font("Segoe UI Semibold", 9)})
         c.SetBounds(150, y, 270, 28)
         If TypeOf c Is TextBox Then
             DirectCast(c, TextBox).BorderStyle = BorderStyle.FixedSingle
         ElseIf TypeOf c Is ComboBox Then
             DirectCast(c, ComboBox).DropDownStyle = ComboBoxStyle.DropDownList
         End If
-        DirectCast(c.Parent, Control)
-        ' El control se agrega al panel desde el llamador mediante la referencia del panel.
-    End Sub
-
-    Private Sub ControlsAddLabel(t As String, y As Integer)
-        ' Se reemplaza por etiquetas en el panel de registro mediante el método auxiliar.
+        panel.Controls.Add(c)
     End Sub
 
     Private Sub CargarCombos()
