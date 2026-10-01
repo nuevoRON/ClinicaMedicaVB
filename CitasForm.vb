@@ -208,7 +208,7 @@ Public Class CitasForm
 
     Private Sub EstablecerFechaHoraInicial()
         Dim propuesta = DateTime.Now.AddMinutes(30)
-        Dim minutosRedondeados = ((propuesta.Minute + 29)  30) * 30
+        Dim minutosRedondeados = ((propuesta.Minute + 29) \ 30) * 30
         If minutosRedondeados >= 60 Then
             propuesta = New DateTime(propuesta.Year, propuesta.Month, propuesta.Day, propuesta.Hour, 0, 0).AddHours(1)
         Else
