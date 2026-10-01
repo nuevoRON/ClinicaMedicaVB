@@ -15,7 +15,7 @@ Imports System.Reflection
 <Assembly: System.Reflection.AssemblyCompanyAttribute("ClinicaMedicaVB"),  _
  Assembly: System.Reflection.AssemblyConfigurationAttribute("Debug"),  _
  Assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0"),  _
- Assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0eb938c359437867af8f058465a87a36940ad7c0"),  _
+ Assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4e5a35a125308901d40eeb969f81c28616826c2e"),  _
  Assembly: System.Reflection.AssemblyProductAttribute("ClinicaMedicaVB"),  _
  Assembly: System.Reflection.AssemblyTitleAttribute("ClinicaMedicaVB"),  _
  Assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0"),  _
