@@ -82,7 +82,7 @@ Public Class RecetasForm
         lista.Controls.Add(New Label With {.Text="Historial de recetas emitidas",.Left=18,.Top=18,.AutoSize=True,.Font=New Font("Segoe UI Semibold",13),.ForeColor=Color.FromArgb(45,55,72)})
         grid.SetBounds(18,55,lista.Width-36,lista.Height-75)
         grid.Anchor=AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
-        grid.ReadOnly=True : grid.AllowUserToAddRows=False : grid.MultiSelect=False
+        grid.ReadOnly=True : grid.AllowUserToAddRows=False : grid.AllowUserToDeleteRows=False : grid.MultiSelect=False : grid.EditMode=DataGridViewEditMode.EditProgrammatically
         grid.SelectionMode=DataGridViewSelectionMode.FullRowSelect
         grid.AutoSizeColumnsMode=DataGridViewAutoSizeColumnsMode.Fill
         grid.AutoGenerateColumns=False
@@ -105,7 +105,7 @@ Public Class RecetasForm
         lista.Controls.Add(grid)
         AddHandler grid.SelectionChanged,Sub(sender As Object,e As EventArgs)
             recetaSeleccionada=0
-            If grid.SelectedRows.Count>0 Then recetaSeleccionada=Convert.ToInt32(grid.SelectedRows(0).Cells("Id").Value)
+            If grid.SelectedRows.Count>0 AndAlso grid.SelectedRows(0).Tag IsNot Nothing Then recetaSeleccionada=Convert.ToInt32(grid.SelectedRows(0).Tag)
         End Sub
         AddHandler grid.CellDoubleClick,AddressOf Imprimir
 
@@ -188,7 +188,18 @@ Public Class RecetasForm
                 End Using
             End Using
         End Using
-        grid.DataSource=dt
+        grid.DataSource=Nothing
+        grid.Rows.Clear()
+        For Each fila As DataRow In dt.Rows
+            Dim indice As Integer=grid.Rows.Add()
+            grid.Rows(indice).Cells("Fecha").Value=fila("Fecha").ToString()
+            grid.Rows(indice).Cells("Paciente").Value=fila("Paciente").ToString()
+            grid.Rows(indice).Cells("Medicamento").Value=fila("Medicamento").ToString()
+            grid.Rows(indice).Cells("Dosis").Value=fila("Dosis").ToString()
+            grid.Rows(indice).Cells("Frecuencia").Value=fila("Frecuencia").ToString()
+            grid.Rows(indice).Cells("Duracion").Value=fila("Duracion").ToString()
+            grid.Rows(indice).Tag=Convert.ToInt32(fila("Id"))
+        Next
     End Sub
 
     Private Sub Imprimir(sender As Object,e As EventArgs)
@@ -220,7 +231,7 @@ Public Class RecetasForm
         End Using
 
         Dim pd As New PrintDocument()
-        pd.DefaultPageSettings.Margins=New Margins(38,38,32,32)
+        pd.DefaultPageSettings.Margins=New Margins(42,42,35,35)
         pd.DefaultPageSettings.Landscape=False
         AddHandler pd.PrintPage,Sub(s,args)
             Dim g=args.Graphics
@@ -239,7 +250,7 @@ Public Class RecetasForm
                 sf.Trimming=StringTrimming.Word
                 g.DrawString("CLÍNICA MÉDICA",titleFont,Brushes.Navy,leftF,y)
                 g.DrawString("RECETA MÉDICA",subFont,Brushes.Black,leftF,y+27)
-                g.DrawString("Fecha: " & DateTime.Now.ToString("dd/MM/yyyy"),smallFont,Brushes.Black,rightF-150,y+8)
+                g.DrawString("Emitida: " & DateTime.Now.ToString("dd/MM/yyyy"),smallFont,Brushes.Black,rightF-160,y+8)
                 y+=49
                 g.DrawLine(linePen,leftF,y,rightF,y)
                 y+=10
@@ -264,9 +275,9 @@ Public Class RecetasForm
                 g.DrawString("Frecuencia: " & frecuenciaImpresion,bodyFont,Brushes.Black,leftF,y) : y+=18
                 g.DrawString("Duración: " & duracionImpresion,bodyFont,Brushes.Black,leftF,y) : y+=22
                 g.DrawString("Indicaciones:",labelFont,Brushes.Navy,leftF,y) : y+=16
-                Dim rectIndicaciones As New RectangleF(leftF,y,widthF,75)
-                g.DrawString(indicacionesImpresion,bodyFont,Brushes.Black,rectIndicaciones,sf)
-                y+=Math.Min(75,g.MeasureString(indicacionesImpresion,bodyFont,CInt(widthF)).Height)+18
+                Dim altoIndicaciones As Single=Math.Max(24,g.MeasureString(indicacionesImpresion,bodyFont,CInt(widthF),sf).Height+4)
+                g.DrawString(indicacionesImpresion,bodyFont,Brushes.Black,New RectangleF(leftF,y,widthF,altoIndicaciones),sf)
+                y+=altoIndicaciones+10
                 g.DrawLine(borderPen,leftF,y,rightF,y)
                 y+=12
                 g.DrawString("Médico: " & medicoImpresion,bodyFont,Brushes.Black,leftF,y) : y+=18
