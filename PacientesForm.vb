@@ -38,7 +38,7 @@ Public Class PacientesForm
         Controls.Add(encabezado)
 
         Dim y=92
-        AddField("Identidad",txtIdentidad,y) : y+=38
+        AddField("Identidad",txtIdentidad,y) : ConfigurarSoloDigitos(txtIdentidad) : y+=38
         AddField("Nombre",txtNombre,y) : y+=38
         AddField("Apellidos",txtApellidos,y) : y+=38
         txtFecha.SetBounds(150,y,220,30)
@@ -47,7 +47,7 @@ Public Class PacientesForm
         txtSexo.Items.AddRange({"Femenino","Masculino","Otro"})
         txtSexo.SetBounds(150,y,220,30)
         Controls.Add(New Label With {.Text="Sexo",.Left=20,.Top=y+5,.Width=120}) : Controls.Add(txtSexo) : y+=38
-        AddField("Teléfono",txtTelefono,y) : y+=38
+        AddField("Teléfono",txtTelefono,y) : ConfigurarSoloDigitos(txtTelefono) : y+=38
         AddField("Dirección",txtDireccion,y) : y+=38
         AddField("Alergias",txtAlergias,y) : y+=38
         AddField("Antecedentes",txtAntecedentes,y) : y+=38
@@ -117,6 +117,12 @@ Public Class PacientesForm
         box.SetBounds(150,y,220,30)
         box.Font = New Font("Segoe UI", 9)
         Controls.Add(box)
+    End Sub
+
+    Private Sub ConfigurarSoloDigitos(caja As TextBox)
+        AddHandler caja.KeyPress, Sub(sender As Object, e As KeyPressEventArgs)
+                                        If Not Char.IsControl(e.KeyChar) AndAlso Not Char.IsDigit(e.KeyChar) Then e.Handled = True
+                                    End Sub
     End Sub
 
     Private Sub Guardar(sender As Object,e As EventArgs)
