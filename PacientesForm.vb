@@ -123,6 +123,14 @@ Public Class PacientesForm
         AddHandler caja.KeyPress, Sub(sender As Object, e As KeyPressEventArgs)
                                         If Not Char.IsControl(e.KeyChar) AndAlso Not Char.IsDigit(e.KeyChar) Then e.Handled = True
                                     End Sub
+        AddHandler caja.TextChanged, Sub(sender As Object, e As EventArgs)
+                                          Dim limpio = New String(caja.Text.Where(Function(ch) Char.IsDigit(ch)).ToArray())
+                                          If limpio <> caja.Text Then
+                                              Dim posicion = caja.SelectionStart
+                                              caja.Text = limpio
+                                              caja.SelectionStart = Math.Min(posicion, caja.Text.Length)
+                                          End If
+                                      End Sub
     End Sub
 
     Private Sub Guardar(sender As Object,e As EventArgs)
