@@ -27,40 +27,57 @@ Public Class PacientesForm
             AddHandler Me.Load, Sub() Me.Close()
             Return
         End If
-        Text="Pacientes" : Width=1150 : Height=700 : StartPosition=FormStartPosition.CenterParent
+        Text = "Gestión de pacientes" : Width = 1200 : Height = 760 : MinimumSize = New Size(1050, 680) : StartPosition = FormStartPosition.CenterParent
+        BackColor = Color.FromArgb(244, 247, 251)
+        Font = New Font("Segoe UI", 9.0F)
+        Dim encabezado As New Panel With {.BackColor = Color.FromArgb(24, 40, 70)}
+        encabezado.SetBounds(0, 0, 1200, 68)
+        Dim titulo As New Label With {.Text = "GESTIÓN DE PACIENTES", .ForeColor = Color.White, .Font = New Font("Segoe UI", 16, FontStyle.Bold), .AutoSize = True, .Location = New Point(22, 10)}
+        Dim subtitulo As New Label With {.Text = "Registro y consulta de información del paciente", .ForeColor = Color.FromArgb(205, 216, 230), .Font = New Font("Segoe UI", 9), .AutoSize = True, .Location = New Point(24, 42)}
+        encabezado.Controls.AddRange({titulo, subtitulo})
+        Controls.Add(encabezado)
 
-        Dim y=20
+        Dim y=92
         AddField("Identidad",txtIdentidad,y) : y+=38
         AddField("Nombre",txtNombre,y) : y+=38
         AddField("Apellidos",txtApellidos,y) : y+=38
-        txtFecha.SetBounds(150,y,220,28)
+        txtFecha.SetBounds(150,y,220,30)
         Controls.Add(New Label With {.Text="Fecha nacimiento",.Left=20,.Top=y+5,.Width=120})
         Controls.Add(txtFecha) : y+=38
         txtSexo.Items.AddRange({"Femenino","Masculino","Otro"})
-        txtSexo.SetBounds(150,y,220,28)
+        txtSexo.SetBounds(150,y,220,30)
         Controls.Add(New Label With {.Text="Sexo",.Left=20,.Top=y+5,.Width=120}) : Controls.Add(txtSexo) : y+=38
         AddField("Teléfono",txtTelefono,y) : y+=38
         AddField("Dirección",txtDireccion,y) : y+=38
         AddField("Alergias",txtAlergias,y) : y+=38
         AddField("Antecedentes",txtAntecedentes,y) : y+=38
 
-        btnGuardar.Text="Guardar paciente" : btnGuardar.SetBounds(150,y,180,35)
+        btnGuardar.Text="Guardar paciente" : btnGuardar.SetBounds(150,y,190,38)
+        btnGuardar.BackColor = Color.FromArgb(28, 112, 91)
+        btnGuardar.ForeColor = Color.White
+        btnGuardar.FlatStyle = FlatStyle.Flat
+        btnGuardar.FlatAppearance.BorderSize = 0
+        btnGuardar.Font = New Font("Segoe UI", 9, FontStyle.Bold)
         Controls.Add(btnGuardar)
         AddHandler btnGuardar.Click, AddressOf Guardar
 
         Dim lblBuscar As New Label With {.Text="Búsqueda avanzada:",.Left=400,.Top=20,.AutoSize=True}
-        cmbCampo.SetBounds(525,15,150,28)
+        cmbCampo.SetBounds(525,87,150,30)
         cmbCampo.DropDownStyle=ComboBoxStyle.DropDownList
         cmbCampo.Items.AddRange({"Todos","Identidad","Nombre","Apellidos","Teléfono"})
         cmbCampo.SelectedIndex=0
 
-        txtBuscar.SetBounds(685,15,250,28)
+        txtBuscar.SetBounds(685,87,250,30)
         txtBuscar.PlaceholderText="Escriba para buscar..."
-        Dim btnBuscar As New Button With {.Text="Buscar",.Left=945,.Top=15,.Width=80,.Height=28}
-        Dim btnTodos As New Button With {.Text="Mostrar todos",.Left=945,.Top=50,.Width=100,.Height=28}
+        Dim btnBuscar As New Button With {.Text="Buscar",.Left=945,.Top=87,.Width=90,.Height=30,.BackColor=Color.FromArgb(37,91,145),.ForeColor=Color.White,.FlatStyle=FlatStyle.Flat}
+        Dim btnTodos As New Button With {.Text="Mostrar todos",.Left=1040,.Top=87,.Width=115,.Height=30,.BackColor=Color.White,.ForeColor=Color.FromArgb(37,55,78),.FlatStyle=FlatStyle.Flat}
 
         btnExpediente.Text="Abrir expediente"
-        btnExpediente.SetBounds(400,55,180,35)
+        btnExpediente.BackColor = Color.FromArgb(37, 91, 145)
+        btnExpediente.ForeColor = Color.White
+        btnExpediente.FlatStyle = FlatStyle.Flat
+        btnExpediente.FlatAppearance.BorderSize = 0
+        btnExpediente.SetBounds(400,122,190,36)
         btnExpediente.Enabled=False
 
         AddHandler btnBuscar.Click, AddressOf Buscar
@@ -70,12 +87,24 @@ Public Class PacientesForm
         AddHandler btnExpediente.Click, AddressOf AbrirExpediente
         AddHandler grid.CellDoubleClick, AddressOf AbrirExpediente
 
-        grid.SetBounds(400,105,700,500)
+        grid.SetBounds(400,174,755,500)
         grid.ReadOnly=True
         grid.AllowUserToAddRows=False
         grid.SelectionMode=DataGridViewSelectionMode.FullRowSelect
         grid.MultiSelect=False
         grid.AutoSizeColumnsMode=DataGridViewAutoSizeColumnsMode.Fill
+        grid.BackgroundColor = Color.White
+        grid.BorderStyle = BorderStyle.None
+        grid.RowHeadersVisible = False
+        grid.EnableHeadersVisualStyles = False
+        grid.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(31, 55, 83)
+        grid.ColumnHeadersDefaultCellStyle.ForeColor = Color.White
+        grid.ColumnHeadersDefaultCellStyle.Font = New Font("Segoe UI", 9, FontStyle.Bold)
+        grid.ColumnHeadersHeight = 38
+        grid.RowTemplate.Height = 32
+        grid.DefaultCellStyle.SelectionBackColor = Color.FromArgb(218, 232, 248)
+        grid.DefaultCellStyle.SelectionForeColor = Color.FromArgb(25, 45, 68)
+        grid.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(247, 250, 253)
 
         Controls.AddRange({lblBuscar,cmbCampo,txtBuscar,btnBuscar,btnTodos,btnExpediente,grid})
         AddHandler grid.SelectionChanged, Sub() btnExpediente.Enabled=(grid.SelectedRows.Count>0)
@@ -84,8 +113,10 @@ Public Class PacientesForm
     End Sub
 
     Private Sub AddField(labelText As String, box As TextBox, y As Integer)
-        Controls.Add(New Label With {.Text=labelText,.Left=20,.Top=y+5,.Width=120})
-        box.SetBounds(150,y,220,28) : Controls.Add(box)
+        Controls.Add(New Label With {.Text=labelText,.Left=20,.Top=y+7,.Width=120,.ForeColor=Color.FromArgb(55,70,88),.Font=New Font("Segoe UI",9,FontStyle.Bold)})
+        box.SetBounds(150,y,220,30)
+        box.Font = New Font("Segoe UI", 9)
+        Controls.Add(box)
     End Sub
 
     Private Sub Guardar(sender As Object,e As EventArgs)
