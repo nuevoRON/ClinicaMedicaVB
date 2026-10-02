@@ -12,6 +12,8 @@ Public Class PacientesForm
     Private txtFecha As New DateTimePicker()
     Private txtSexo As New ComboBox()
     Private txtTelefono As New TextBox()
+    Private txtContactoAlterno As New TextBox()
+    Private txtTelefonoAlterno As New TextBox()
     Private txtDireccion As New TextBox()
     Private txtAlergias As New TextBox()
     Private txtAntecedentes As New TextBox()
@@ -50,6 +52,8 @@ Public Class PacientesForm
         txtSexo.SetBounds(150,y,220,30)
         Controls.Add(New Label With {.Text="Sexo",.Left=20,.Top=y+5,.Width=120}) : Controls.Add(txtSexo) : y+=38
         AddField("Teléfono",txtTelefono,y) : ConfigurarSoloDigitos(txtTelefono) : y+=38
+        AddField("Contacto alterno",txtContactoAlterno,y) : y+=38
+        AddField("Núm. contacto alterno",txtTelefonoAlterno,y) : ConfigurarSoloDigitos(txtTelefonoAlterno) : y+=38
         AddField("Dirección",txtDireccion,y) : y+=38
         AddField("Alergias",txtAlergias,y) : y+=38
         AddField("Antecedentes",txtAntecedentes,y) : y+=38
@@ -66,7 +70,7 @@ Public Class PacientesForm
         Dim lblBuscar As New Label With {.Text="Búsqueda avanzada:",.Left=400,.Top=20,.AutoSize=True}
         cmbCampo.SetBounds(525,87,150,30)
         cmbCampo.DropDownStyle=ComboBoxStyle.DropDownList
-        cmbCampo.Items.AddRange({"Todos","Identidad","Nombre","Apellidos","Teléfono"})
+        cmbCampo.Items.AddRange({"Todos","Identidad","Nombre","Apellidos","Teléfono","Contacto alterno","Número alterno"})
         cmbCampo.SelectedIndex=0
 
         txtBuscar.SetBounds(685,87,250,30)
@@ -154,9 +158,9 @@ Public Class PacientesForm
             Using cn=Database.Connection()
                 Using cmd=cn.CreateCommand()
                     If pacienteEditandoId=0 Then
-                        cmd.CommandText="INSERT INTO Pacientes(Identidad,Nombre,Apellidos,FechaNacimiento,Sexo,Telefono,Direccion,Alergias,Antecedentes,FechaRegistro) VALUES($i,$n,$a,$f,$s,$t,$d,$al,$an,$r)"
+                        cmd.CommandText="INSERT INTO Pacientes(Identidad,Nombre,Apellidos,FechaNacimiento,Sexo,Telefono,ContactoEmergencia,TelefonoEmergencia,Direccion,Alergias,Antecedentes,FechaRegistro) VALUES($i,$n,$a,$f,$s,$t,$ca,$ta,$d,$al,$an,$r)"
                     Else
-                        cmd.CommandText="UPDATE Pacientes SET Identidad=$i,Nombre=$n,Apellidos=$a,FechaNacimiento=$f,Sexo=$s,Telefono=$t,Direccion=$d,Alergias=$al,Antecedentes=$an WHERE Id=$id"
+                        cmd.CommandText="UPDATE Pacientes SET Identidad=$i,Nombre=$n,Apellidos=$a,FechaNacimiento=$f,Sexo=$s,Telefono=$t,ContactoEmergencia=$ca,TelefonoEmergencia=$ta,Direccion=$d,Alergias=$al,Antecedentes=$an WHERE Id=$id"
                         cmd.Parameters.AddWithValue("$id",pacienteEditandoId)
                     End If
                     cmd.Parameters.AddWithValue("$i",txtIdentidad.Text.Trim())
@@ -165,6 +169,8 @@ Public Class PacientesForm
                     cmd.Parameters.AddWithValue("$f",txtFecha.Value.ToString("yyyy-MM-dd"))
                     cmd.Parameters.AddWithValue("$s",txtSexo.Text)
                     cmd.Parameters.AddWithValue("$t",txtTelefono.Text)
+                    cmd.Parameters.AddWithValue("$ca",txtContactoAlterno.Text.Trim())
+                    cmd.Parameters.AddWithValue("$ta",txtTelefonoAlterno.Text.Trim())
                     cmd.Parameters.AddWithValue("$d",txtDireccion.Text)
                     cmd.Parameters.AddWithValue("$al",txtAlergias.Text)
                     cmd.Parameters.AddWithValue("$an",txtAntecedentes.Text)
@@ -183,7 +189,7 @@ Public Class PacientesForm
     Private Sub Limpiar()
         pacienteEditandoId=0
         btnGuardar.Text="Guardar paciente"
-        For Each c As Control In {txtIdentidad,txtNombre,txtApellidos,txtTelefono,txtDireccion,txtAlergias,txtAntecedentes}
+        For Each c As Control In {txtIdentidad,txtNombre,txtApellidos,txtTelefono,txtContactoAlterno,txtTelefonoAlterno,txtDireccion,txtAlergias,txtAntecedentes}
             c.Text=""
         Next
         txtSexo.SelectedIndex=-1
@@ -211,12 +217,14 @@ Public Class PacientesForm
             Case 2 : condicion="Nombre LIKE $f"
             Case 3 : condicion="Apellidos LIKE $f"
             Case 4 : condicion="Telefono LIKE $f"
-            Case Else : condicion="(Identidad LIKE $f OR Nombre LIKE $f OR Apellidos LIKE $f OR Telefono LIKE $f)"
+            Case 5 : condicion="ContactoEmergencia LIKE $f"
+            Case 6 : condicion="TelefonoEmergencia LIKE $f"
+            Case Else : condicion="(Identidad LIKE $f OR Nombre LIKE $f OR Apellidos LIKE $f OR Telefono LIKE $f OR ContactoEmergencia LIKE $f OR TelefonoEmergencia LIKE $f)"
         End Select
 
         Using cn=Database.Connection()
             Using cmd=cn.CreateCommand()
-                cmd.CommandText=$"SELECT Id,Identidad,Nombre,Apellidos,FechaNacimiento,Sexo,Telefono FROM Pacientes WHERE {condicion} ORDER BY Apellidos,Nombre"
+                cmd.CommandText=$"SELECT Id,Identidad,Nombre,Apellidos,FechaNacimiento,Sexo,Telefono,ContactoEmergencia AS [Contacto alterno],TelefonoEmergencia AS [Número contacto alterno] FROM Pacientes WHERE {condicion} ORDER BY Apellidos,Nombre"
                 cmd.Parameters.AddWithValue("$f","%" & filtro & "%")
                 Using rd=cmd.ExecuteReader()
                     dt.Load(rd)
@@ -231,7 +239,7 @@ Public Class PacientesForm
         Dim id=Convert.ToInt32(grid.SelectedRows(0).Cells("Id").Value)
         Using cn=Database.Connection()
             Using cmd=cn.CreateCommand()
-                cmd.CommandText="SELECT Identidad,Nombre,Apellidos,FechaNacimiento,Sexo,Telefono,Direccion,Alergias,Antecedentes FROM Pacientes WHERE Id=$id"
+                cmd.CommandText="SELECT Identidad,Nombre,Apellidos,FechaNacimiento,Sexo,Telefono,ContactoEmergencia,TelefonoEmergencia,Direccion,Alergias,Antecedentes FROM Pacientes WHERE Id=$id"
                 cmd.Parameters.AddWithValue("$id",id)
                 Using rd=cmd.ExecuteReader()
                     If Not rd.Read() Then Return
@@ -245,6 +253,8 @@ Public Class PacientesForm
                     End If
                     txtSexo.Text=If(rd("Sexo") Is DBNull.Value,"",rd("Sexo").ToString())
                     txtTelefono.Text=If(rd("Telefono") Is DBNull.Value,"",rd("Telefono").ToString())
+                    txtContactoAlterno.Text=If(rd("ContactoEmergencia") Is DBNull.Value,"",rd("ContactoEmergencia").ToString())
+                    txtTelefonoAlterno.Text=If(rd("TelefonoEmergencia") Is DBNull.Value,"",rd("TelefonoEmergencia").ToString())
                     txtDireccion.Text=If(rd("Direccion") Is DBNull.Value,"",rd("Direccion").ToString())
                     txtAlergias.Text=If(rd("Alergias") Is DBNull.Value,"",rd("Alergias").ToString())
                     txtAntecedentes.Text=If(rd("Antecedentes") Is DBNull.Value,"",rd("Antecedentes").ToString())
