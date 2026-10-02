@@ -154,6 +154,11 @@ Public Class PacientesForm
         If txtIdentidad.Text.Trim()="" OrElse txtNombre.Text.Trim()="" OrElse txtApellidos.Text.Trim()="" Then
             MessageBox.Show("Identidad, nombre y apellidos son obligatorios.") : Return
         End If
+        If txtIdentidad.Text.Trim().Length <> 13 Then
+            MessageBox.Show("La identidad debe contener 13 dígitos.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            txtIdentidad.Focus()
+            Return
+        End If
         Dim telefonoPrincipal = txtTelefono.Text.Trim()
         Dim telefonoAlterno = txtTelefonoAlterno.Text.Trim()
         If (telefonoPrincipal <> "" AndAlso telefonoPrincipal.Length <> 8) OrElse (telefonoAlterno <> "" AndAlso telefonoAlterno.Length <> 8) Then
