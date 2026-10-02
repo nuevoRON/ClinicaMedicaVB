@@ -268,6 +268,16 @@ Public Class CitasForm
         If medico.SelectedItem IsNot Nothing Then mid = DirectCast(medico.SelectedItem, ComboItem).Id
 
         Using cn = Database.Connection()
+            Using validar = cn.CreateCommand()
+                validar.CommandText = "SELECT COUNT(*) FROM Citas WHERE FechaHora=$f AND COALESCE(MedicoId,0)=COALESCE($m,0) AND Estado<>'Cancelada' AND Id<>$id"
+                validar.Parameters.AddWithValue("$f", fechaHora.ToString("s"))
+                validar.Parameters.AddWithValue("$m", mid)
+                validar.Parameters.AddWithValue("$id", citaEditandoId)
+                If Convert.ToInt32(validar.ExecuteScalar()) > 0 Then
+                    MessageBox.Show("Ya existe una cita activa para ese médico en la fecha y hora seleccionadas.", "Conflicto de horario", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                    Return
+                End If
+            End Using
             Using cmd = cn.CreateCommand()
                 If citaEditandoId = 0 Then
                     cmd.CommandText = "INSERT INTO Citas(PacienteId,MedicoId,FechaHora,Motivo,Estado) VALUES($p,$m,$f,$mo,$e)"
