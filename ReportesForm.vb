@@ -111,7 +111,7 @@ Public Class ReportesForm
                         cmd.Parameters.AddWithValue("$f","%" & txtFiltro.Text.Trim() & "%")
 
                     Case 4
-                        cmd.CommandText="SELECT 'Pacientes registrados' AS 'Indicador', COUNT(*) AS 'Total' FROM Pacientes UNION ALL SELECT 'Médicos activos', COUNT(*) FROM Medicos WHERE Activo=1 UNION ALL SELECT 'Citas', COUNT(*) FROM Citas WHERE date(FechaHora) BETWEEN date($d) AND date($h) UNION ALL SELECT 'Consultas', COUNT(*) FROM Consultas WHERE date(FechaHora) BETWEEN date($d) AND date($h) UNION ALL SELECT 'Recetas', COUNT(*) FROM Recetas WHERE date(Fecha) BETWEEN date($d) AND date($h)"
+                        cmd.CommandText="SELECT 'Pacientes registrados en el período' AS 'Indicador', COUNT(*) AS 'Total' FROM Pacientes WHERE date(FechaRegistro) BETWEEN date($d) AND date($h) UNION ALL SELECT 'Médicos activos (total)', COUNT(*) FROM Medicos WHERE Activo=1 UNION ALL SELECT 'Citas', COUNT(*) FROM Citas WHERE date(FechaHora) BETWEEN date($d) AND date($h) UNION ALL SELECT 'Consultas', COUNT(*) FROM Consultas WHERE date(FechaHora) BETWEEN date($d) AND date($h) UNION ALL SELECT 'Recetas', COUNT(*) FROM Recetas WHERE date(Fecha) BETWEEN date($d) AND date($h)"
                         cmd.Parameters.AddWithValue("$d",dtDesde.Value.ToString("yyyy-MM-dd"))
                         cmd.Parameters.AddWithValue("$h",dtHasta.Value.ToString("yyyy-MM-dd"))
 
