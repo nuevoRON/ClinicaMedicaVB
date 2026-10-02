@@ -154,8 +154,24 @@ Public Class PacientesForm
         If txtIdentidad.Text.Trim()="" OrElse txtNombre.Text.Trim()="" OrElse txtApellidos.Text.Trim()="" Then
             MessageBox.Show("Identidad, nombre y apellidos son obligatorios.") : Return
         End If
+        Dim telefonoPrincipal = txtTelefono.Text.Trim()
+        Dim telefonoAlterno = txtTelefonoAlterno.Text.Trim()
+        If (telefonoPrincipal <> "" AndAlso telefonoPrincipal.Length <> 8) OrElse (telefonoAlterno <> "" AndAlso telefonoAlterno.Length <> 8) Then
+            MessageBox.Show("Los teléfonos ingresados deben contener 8 dígitos.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Return
+        End If
+
         Try
             Using cn=Database.Connection()
+                Using duplicado=cn.CreateCommand()
+                    duplicado.CommandText="SELECT COUNT(*) FROM Pacientes WHERE Identidad=$i AND Id<>$id"
+                    duplicado.Parameters.AddWithValue("$i",txtIdentidad.Text.Trim())
+                    duplicado.Parameters.AddWithValue("$id",pacienteEditandoId)
+                    If Convert.ToInt32(duplicado.ExecuteScalar())>0 Then
+                        MessageBox.Show("Ya existe un paciente registrado con esa identidad.", "Registro duplicado", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                        Return
+                    End If
+                End Using
                 Using cmd=cn.CreateCommand()
                     If pacienteEditandoId=0 Then
                         cmd.CommandText="INSERT INTO Pacientes(Identidad,Nombre,Apellidos,FechaNacimiento,Sexo,Telefono,ContactoEmergencia,TelefonoEmergencia,Direccion,Alergias,Antecedentes,FechaRegistro) VALUES($i,$n,$a,$f,$s,$t,$ca,$ta,$d,$al,$an,$r)"
