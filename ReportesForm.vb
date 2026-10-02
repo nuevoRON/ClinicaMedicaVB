@@ -37,7 +37,8 @@ Public Class ReportesForm
             "Citas por período",
             "Consultas por período",
             "Recetas por período",
-            "Resumen general"
+            "Resumen general",
+            "Citas por estado"
         })
         cmbReporte.SelectedIndex=0
 
@@ -113,6 +114,11 @@ Public Class ReportesForm
                         cmd.CommandText="SELECT 'Pacientes registrados' AS 'Indicador', COUNT(*) AS 'Total' FROM Pacientes UNION ALL SELECT 'Médicos activos', COUNT(*) FROM Medicos WHERE Activo=1 UNION ALL SELECT 'Citas', COUNT(*) FROM Citas WHERE date(FechaHora) BETWEEN date($d) AND date($h) UNION ALL SELECT 'Consultas', COUNT(*) FROM Consultas WHERE date(FechaHora) BETWEEN date($d) AND date($h) UNION ALL SELECT 'Recetas', COUNT(*) FROM Recetas WHERE date(Fecha) BETWEEN date($d) AND date($h)"
                         cmd.Parameters.AddWithValue("$d",dtDesde.Value.ToString("yyyy-MM-dd"))
                         cmd.Parameters.AddWithValue("$h",dtHasta.Value.ToString("yyyy-MM-dd"))
+
+                    Case 5
+                        cmd.CommandText="SELECT COALESCE(Estado,'Pendiente') AS 'Estado de cita', COUNT(*) AS 'Cantidad' FROM Citas WHERE date(FechaHora) BETWEEN date($d) AND date($h) GROUP BY COALESCE(Estado,'Pendiente') ORDER BY CASE COALESCE(Estado,'Pendiente') WHEN 'Pendiente' THEN 1 WHEN 'Confirmada' THEN 2 WHEN 'Atendida' THEN 3 WHEN 'Cancelada' THEN 4 ELSE 5 END"
+                        cmd.Parameters.AddWithValue("$d",dtDesde.Value.ToString("yyyy-MM-dd"))
+                        cmd.Parameters.AddWithValue("$h",dtHasta.Value.ToString("yyyy-MM-dd"))
                 End Select
 
                 Using rd=cmd.ExecuteReader()
@@ -122,6 +128,7 @@ Public Class ReportesForm
         End Using
 
         dgv.DataSource=dt
+        Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Generación de reporte", "Reportes", cmbReporte.Text & " | " & dtDesde.Value.ToString("yyyy-MM-dd") & " a " & dtHasta.Value.ToString("yyyy-MM-dd"))
     End Sub
 
     Private Sub VistaPrevia(sender As Object,e As EventArgs)
