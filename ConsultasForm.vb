@@ -191,6 +191,39 @@ Public Class ConsultasForm
             Return
         End If
 
+        Dim numero As Double
+        Dim temperaturaNormalizada = temperatura.Text.Trim().Replace(",", ".")
+        Dim pesoNormalizado = peso.Text.Trim().Replace(",", ".")
+        If Not System.Text.RegularExpressions.Regex.IsMatch(presion.Text.Trim(), "^\d{2,3}/\d{2,3}$") Then
+            MessageBox.Show("Ingrese la presión con formato sistólica/diastólica, por ejemplo 120/80.", "Validación de datos", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            presion.Focus()
+            Return
+        End If
+        If Not Double.TryParse(temperaturaNormalizada, Globalization.NumberStyles.AllowDecimalPoint, Globalization.CultureInfo.InvariantCulture, numero) OrElse numero <= 0 Then
+            MessageBox.Show("Ingrese una temperatura numérica válida.", "Validación de datos", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            temperatura.Focus()
+            Return
+        End If
+        If Not Integer.TryParse(frecuencia.Text.Trim(), Nothing) Then
+            Dim frecuenciaValor As Integer
+            If Not Integer.TryParse(frecuencia.Text.Trim(), frecuenciaValor) OrElse frecuenciaValor <= 0 Then
+                MessageBox.Show("Ingrese la frecuencia cardiaca como un número entero positivo.", "Validación de datos", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                frecuencia.Focus()
+                Return
+            End If
+        End If
+        Dim saturacionValor As Integer
+        If Not Integer.TryParse(saturacion.Text.Trim(), saturacionValor) OrElse saturacionValor < 0 OrElse saturacionValor > 100 Then
+            MessageBox.Show("La saturación debe ser un número entre 0 y 100.", "Validación de datos", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            saturacion.Focus()
+            Return
+        End If
+        If Not Double.TryParse(pesoNormalizado, Globalization.NumberStyles.AllowDecimalPoint, Globalization.CultureInfo.InvariantCulture, numero) OrElse numero <= 0 Then
+            MessageBox.Show("Ingrese un peso numérico mayor que cero.", "Validación de datos", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            peso.Focus()
+            Return
+        End If
+
         Dim p = DirectCast(paciente.SelectedItem, ComboItem)
         Dim mid As Object = DBNull.Value
         If medico.SelectedItem IsNot Nothing Then mid = DirectCast(medico.SelectedItem, ComboItem).Id
