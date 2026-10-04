@@ -8,6 +8,7 @@ Public Class ExpedienteForm
     Private lblDatos As New Label()
     Private historial As New DataGridView()
     Private citas As New DataGridView()
+    Private recetas As New DataGridView()
     Private btnActualizar As New Button()
 
     Public Sub New(Optional pacienteIdInicial As Integer = 0)
@@ -40,6 +41,7 @@ Public Class ExpedienteForm
         Dim tabs As New TabControl With {.Left=20,.Top=160,.Width=1030,.Height=450}
         Dim tabHist As New TabPage("Historial de consultas")
         Dim tabCitas As New TabPage("Citas")
+        Dim tabRecetas As New TabPage("Recetas")
         historial.Dock=DockStyle.Fill
         historial.ReadOnly=True
         historial.AutoSizeColumnsMode=DataGridViewAutoSizeColumnsMode.Fill
@@ -48,8 +50,15 @@ Public Class ExpedienteForm
         citas.ReadOnly=True
         citas.AutoSizeColumnsMode=DataGridViewAutoSizeColumnsMode.Fill
         tabCitas.Controls.Add(citas)
+        recetas.Dock=DockStyle.Fill
+        recetas.ReadOnly=True
+        recetas.AllowUserToAddRows=False
+        recetas.SelectionMode=DataGridViewSelectionMode.FullRowSelect
+        recetas.AutoSizeColumnsMode=DataGridViewAutoSizeColumnsMode.Fill
+        tabRecetas.Controls.Add(recetas)
         tabs.TabPages.Add(tabHist)
         tabs.TabPages.Add(tabCitas)
+        tabs.TabPages.Add(tabRecetas)
         Controls.Add(tabs)
 
         CargarPacientes(pacienteIdInicial)
@@ -87,7 +96,7 @@ Public Class ExpedienteForm
 
         Using cn=Database.Connection()
             Using cmd=cn.CreateCommand()
-                cmd.CommandText="SELECT Identidad,Nombre,Apellidos,FechaNacimiento,Sexo,Telefono,Direccion,Alergias,Antecedentes FROM Pacientes WHERE Id=$id"
+                cmd.CommandText="SELECT Identidad,Nombre,Apellidos,FechaNacimiento,Sexo,Telefono,Direccion,ContactoEmergencia,TelefonoEmergencia,Alergias,Antecedentes FROM Pacientes WHERE Id=$id"
                 cmd.Parameters.AddWithValue("$id",p.Id)
                 Using rd=cmd.ExecuteReader()
                     If rd.Read() Then
@@ -97,6 +106,8 @@ Public Class ExpedienteForm
                             Environment.NewLine &
                             $"Dirección: {rd("Direccion")}" &
                             Environment.NewLine &
+                            $"Contacto de emergencia: {rd("ContactoEmergencia")} ({rd("TelefonoEmergencia")})" &
+                            Environment.NewLine &
                             $"Alergias: {rd("Alergias")}    Antecedentes: {rd("Antecedentes")}"
                     End If
                 End Using
@@ -105,6 +116,7 @@ Public Class ExpedienteForm
 
         CargarHistorial(p.Id)
         CargarCitas(p.Id)
+        CargarRecetas(p.Id)
     End Sub
 
     Private Sub CargarHistorial(id As Integer)
@@ -133,6 +145,20 @@ Public Class ExpedienteForm
             End Using
         End Using
         citas.DataSource=dt
+    End Sub
+
+    Private Sub CargarRecetas(id As Integer)
+        Dim dt As New DataTable()
+        Using cn=Database.Connection()
+            Using cmd=cn.CreateCommand()
+                cmd.CommandText="SELECT R.Fecha AS Fecha,C.FechaHora AS 'Consulta',R.Medicamento,R.Dosis,R.Frecuencia,R.Duracion,R.Indicaciones,COALESCE(M.Nombre,'Sin médico') AS Medico FROM Recetas R INNER JOIN Consultas C ON C.Id=R.ConsultaId LEFT JOIN Medicos M ON M.Id=C.MedicoId WHERE C.PacienteId=$id ORDER BY R.Fecha DESC,R.Id DESC"
+                cmd.Parameters.AddWithValue("$id",id)
+                Using rd=cmd.ExecuteReader()
+                    dt.Load(rd)
+                End Using
+            End Using
+        End Using
+        recetas.DataSource=dt
     End Sub
 
     Private Class PacienteItem
