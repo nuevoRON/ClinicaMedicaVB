@@ -204,13 +204,11 @@ Public Class ConsultasForm
             temperatura.Focus()
             Return
         End If
-        If Not Integer.TryParse(frecuencia.Text.Trim(), Nothing) Then
-            Dim frecuenciaValor As Integer
-            If Not Integer.TryParse(frecuencia.Text.Trim(), frecuenciaValor) OrElse frecuenciaValor <= 0 Then
-                MessageBox.Show("Ingrese la frecuencia cardiaca como un número entero positivo.", "Validación de datos", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-                frecuencia.Focus()
-                Return
-            End If
+        Dim frecuenciaValor As Integer
+        If Not Integer.TryParse(frecuencia.Text.Trim(), frecuenciaValor) OrElse frecuenciaValor <= 0 Then
+            MessageBox.Show("Ingrese la frecuencia cardiaca como un número entero positivo.", "Validación de datos", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            frecuencia.Focus()
+            Return
         End If
         Dim saturacionValor As Integer
         If Not Integer.TryParse(saturacion.Text.Trim(), saturacionValor) OrElse saturacionValor < 0 OrElse saturacionValor > 100 Then
