@@ -1,6 +1,8 @@
 Imports Microsoft.Data.Sqlite
 Imports System.Drawing
 Imports System.Drawing.Printing
+Imports System.IO
+Imports System.Text
 
 Public Class ReportesForm
     Inherits Form
@@ -13,6 +15,7 @@ Public Class ReportesForm
     Private btnGenerar As New Button()
     Private btnVista As New Button()
     Private btnImprimir As New Button()
+    Private btnExportar As New Button()
 
     Private printDoc As New PrintDocument()
     Private printPreview As New PrintPreviewDialog()
@@ -60,6 +63,8 @@ Public Class ReportesForm
         btnVista.SetBounds(515,55,120,35)
         btnImprimir.Text="Imprimir"
         btnImprimir.SetBounds(645,55,110,35)
+        btnExportar.Text="Exportar CSV"
+        btnExportar.SetBounds(765,55,125,35)
 
         dgv.SetBounds(20,110,990,470)
         dgv.ReadOnly=True
@@ -70,11 +75,12 @@ Public Class ReportesForm
         AddHandler btnGenerar.Click, AddressOf Generar
         AddHandler btnVista.Click, AddressOf VistaPrevia
         AddHandler btnImprimir.Click, AddressOf Imprimir
+        AddHandler btnExportar.Click, AddressOf ExportarCsv
 
         printDoc.DefaultPageSettings.Landscape=True
         AddHandler printDoc.PrintPage, AddressOf ImprimirPagina
 
-        Controls.AddRange({lblReporte,cmbReporte,lblDesde,dtDesde,lblHasta,dtHasta,lblFiltro,txtFiltro,btnGenerar,btnVista,btnImprimir,dgv})
+        Controls.AddRange({lblReporte,cmbReporte,lblDesde,dtDesde,lblHasta,dtHasta,lblFiltro,txtFiltro,btnGenerar,btnVista,btnImprimir,btnExportar,dgv})
     End Sub
 
     Private Sub Generar(sender As Object,e As EventArgs)
@@ -130,6 +136,37 @@ Public Class ReportesForm
         dgv.DataSource=dt
         Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Generación de reporte", "Reportes", cmbReporte.Text & " | " & dtDesde.Value.ToString("yyyy-MM-dd") & " a " & dtHasta.Value.ToString("yyyy-MM-dd"))
     End Sub
+
+    Private Sub ExportarCsv(sender As Object, e As EventArgs)
+        If dgv.DataSource Is Nothing OrElse dgv.Columns.Count = 0 Then
+            MessageBox.Show("Primero genere un reporte.", "Exportación", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Return
+        End If
+
+        If MessageBox.Show("El archivo puede contener información personal o clínica. Guárdelo únicamente en una ubicación autorizada. ¿Desea continuar?",
+                           "Protección de datos", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) <> DialogResult.Yes Then Return
+
+        Using dlg As New SaveFileDialog()
+            dlg.Title = "Guardar reporte CSV"
+            dlg.Filter = "Archivo CSV (*.csv)|*.csv"
+            dlg.FileName = "Reporte_" & DateTime.Now.ToString("yyyyMMdd_HHmm") & ".csv"
+            If dlg.ShowDialog() <> DialogResult.OK Then Return
+
+            Dim lineas As New List(Of String)()
+            lineas.Add(String.Join(",", dgv.Columns.Cast(Of DataGridViewColumn)().Select(Function(col) CsvCampo(col.HeaderText))))
+            For Each fila As DataGridViewRow In dgv.Rows
+                If fila.IsNewRow Then Continue For
+                lineas.Add(String.Join(",", fila.Cells.Cast(Of DataGridViewCell)().Select(Function(cell) CsvCampo(If(cell.Value Is Nothing OrElse cell.Value Is DBNull.Value, "", cell.Value.ToString())))))
+            Next
+            File.WriteAllText(dlg.FileName, String.Join(Environment.NewLine, lineas), New UTF8Encoding(True))
+            Database.RegistrarAccion(Session.CurrentUser, Session.CurrentRole, "Exportación CSV", "Reportes", cmbReporte.Text)
+            MessageBox.Show("Reporte exportado correctamente.", "Exportación", MessageBoxButtons.OK, MessageBoxIcon.Information)
+        End Using
+    End Sub
+
+    Private Function CsvCampo(valor As String) As String
+        Return """" & If(valor, "").Replace("""", """""") & """"
+    End Function
 
     Private Sub VistaPrevia(sender As Object,e As EventArgs)
         If dgv.Rows.Count=0 Then
