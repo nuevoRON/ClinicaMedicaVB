@@ -1,3 +1,4 @@
+Imports System.Linq
 Imports Microsoft.Data.Sqlite
 Imports System.Drawing
 Imports System.Drawing.Printing
